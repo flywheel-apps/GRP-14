@@ -205,6 +205,7 @@ def initialize(context):
     Returns: logger
     """
 
+
     # Add manifest.json as the manifest_json attribute
     setattr(context, 'manifest_json', load_manifest_json())
 
@@ -351,6 +352,7 @@ def set_up_data(context, log):
 
 def execute(context, log):
     """Run the Freesurfer Longitudinal Pipeline"""
+
     try:
 
         # Don't run if there were errors or if this is a dry run
@@ -370,6 +372,8 @@ def execute(context, log):
             log.warning(e)
             context.gear_dict['warnings'].append(e)
             utils.dry_run.pretend_it_ran(context)
+
+        ret = 1 # assume the worst
 
         if ok_to_run:
 
@@ -566,6 +570,3 @@ if __name__ == '__main__':
         set_up_data(context, log)
 
     execute(context, log)
-
-
-# vi:set autoindent ts=4 sw=4 expandtab : See Vim, :help 'modeline'
