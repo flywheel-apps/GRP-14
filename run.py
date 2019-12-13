@@ -264,7 +264,7 @@ def execute(context, log):
             # Run cross-sectional analysis on each nifti
             vid = 1
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -s ' + str(vid) + ' -i ' + nifti +\
+                cmd = 'recon-all -s ' + "{:03d}".format(vid) + ' -i ' + nifti +\
                       ' -all -qcache '
                 if dry:
                     print('Not running: ' + cmd)
@@ -277,7 +277,7 @@ def execute(context, log):
             vid = 1
             cmd = 'recon-all -base BASE '
             for nifti in context.gear_dict['niftis']:
-                cmd += '-tp ' + str(vid) + ' '
+                cmd += '-tp ' + "{:03d}".format(vid) + ' '
                 vid += 1
             cmd += '-all -qcache '
             if dry:
@@ -289,7 +289,8 @@ def execute(context, log):
             # Run longitudinal on each time point
             vid = 1
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -long ' + str(vid) + ' BASE -all -qcache'
+                cmd = 'recon-all -long ' + "{:03d}".format(vid) + \
+                      ' BASE -all -qcache'
                 if dry:
                     print('Not running: ' + cmd)
                     ret = 0
