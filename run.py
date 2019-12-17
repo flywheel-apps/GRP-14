@@ -205,7 +205,6 @@ def initialize(context):
     Returns: logger
     """
 
-
     # Add manifest.json as the manifest_json attribute
     setattr(context, 'manifest_json', load_manifest_json())
 
