@@ -1,21 +1,54 @@
 #!/usr/bin/env python3
-""" Run the gear: set up for and call command-line code """
+""" Run the gear: set up for and call Freesurfer Longitudinal Processing
+
+Description
+  - Cross-sectional and longitudinal FreeSurfer proessing for a
+    single patient with multiple scans
+  - Collect all longitudinal FreeSurfer results into summary tables
+
+Process
+  - Execute cross-sectional processing for each Nifti nii_j with
+    coresponding scan (visit) ID visit_j
+      % recon-all -s visit_j -i nii_j -all -qcache [-3T]
+  - Create the unbiased template
+      % recon-all -base BASE -tp visit_1 -tp visit_2 ... -tp visit_N \
+         -all -qcache [-3T]
+  - Execute longitudinal processing for each scan (visit)
+      % recon-all -long visit_j BASE -all -qcache [-3T]
+  - The -3T option is included if B0=3.0 is in the Nifti "descrip"
+
+Freesurfer Output Structure
+       <destdir>/<patnum>/visit_j
+       <destdir>/<patnum>/BASE
+       <destdir>/<patnum>/visit_j.long.BASE
+
+Summary Outputs
+  freesurfer_aseg_vol.csv
+  freesurfer_aparc_vol_right.csv
+  freesurfer_aparc_vol_left.csv
+  freesurfer_aparc_thick_right.csv
+  freesurfer_aparc_thick_left.csv
+  freesurfer_aparc_area_right.csv
+  freesurfer_aparc_area_left.csv
+
+Original perl coding by: DB Clayton - 2019/09/17
+
+"""
 
 import os
 from subprocess import Popen, PIPE, STDOUT
 import sys
 import logging
 import shutil
+import json
 
 import flywheel
 
-from utils import args
+from utils.licenses.freesurfer import find_freesurfer_license
 
-from utils.dicom.import_dicom_header_as_dict import *
-
-from utils.fly.custom_log import *
-from utils.fly.load_manifest_json import *
-from utils.fly.make_file_name_safe import *
+from utils.fly.custom_log import custom_log 
+from utils.fly.load_manifest_json import load_manifest_json 
+from utils.fly.make_file_name_safe import make_file_name_safe
 
 from utils.results.set_zip_name import set_zip_head
 
@@ -23,6 +56,10 @@ import utils.dry_run
 
 
 def run(command):
+    """Call the system to execute a command line command
+       using subprocess.Popen().  Why?  Because the version of
+       python in the BIDS App Freesurfer container is 3.4.
+    """
     log.info('Running: ' + command)
     ignore_errors=False
     process = Popen(command, stdout=PIPE, stderr=STDOUT, shell=True, 
@@ -40,6 +77,17 @@ def run(command):
 
 
 def initialize(context):
+    """Initialize logging and add informaiton to gear context:
+        context.gear_dict:
+            set COMMAND (only used here in log messages)
+            initialize errors and warning lists
+            set run_level
+            set project, subject, and session information (id's labels and
+                labels that can be used as file/folder names)
+            set ouput file names and output_analysisid_dir
+            set environ (system environment variables saved by Docker)
+    Returns: logger
+    """
 
     # Add manifest.json as the manifest_json attribute
     setattr(context, 'manifest_json', load_manifest_json())
@@ -80,6 +128,7 @@ def initialize(context):
     context.gear_dict['subject_id'] = subject_id
     if subject_id:
         subject = fw.get(subject_id)
+        context.gear_dict['subject'] = subject
         context.gear_dict['subject_code'] = subject.code
         context.gear_dict['subject_code_safe'] = \
             make_file_name_safe(subject.code, '_')
@@ -120,47 +169,14 @@ def initialize(context):
             kv += k + '=' + v + ' '
         log.debug('Environment: ' + kv)
 
+    find_freesurfer_license(context, '/opt/freesurfer/license.txt')
+
     return log
 
 
-def create_command(context, log):
-
-    # Create the command and validate the given arguments
-    try:
-
-        # Set the actual gear command:
-        command = [context.gear_dict['COMMAND']]
-
-        # positional args: output dir, analysis level
-        # This should be done here in case there are nargs='*' arguments
-        command.append(context.gear_dict['output_analysisid_dir'])
-
-        # Put command into gear_dict so arguments can be added in args.
-        context.gear_dict['command_line'] = command
-
-        # Process inputs, contextual values and build a dictionary of
-        # key-value arguments specific for COMMAND
-        args.get_inputs_and_args(context)
-
-        # Validate the command parameter dictionary - make sure everything is 
-        # ready to run so errors will appear before launching the actual gear 
-        # code.  Raises Exception on fail
-        args.validate(context)
-
-        # Build final command-line (a list of strings)
-        # result is put into context.gear_dict['command_line'] 
-        args.build_command(context)
-
-    except Exception as e:
-        context.gear_dict['errors'].append(e)
-        log.critical(e)
-        log.exception('Error in creating and validating command.')
-
-
 def set_up_data(context, log):
-    # Set up and validate data to be used by command
+    """Download scans to run on"""
     try:
-
 
         if context.gear_dict['run_level'] == 'project':
 
@@ -176,20 +192,18 @@ def set_up_data(context, log):
 
             niftis = []
             fw = context.client
-            project_sessions = \
-                fw.get_project_sessions(context.gear_dict['project_id'])
-            for session in project_sessions:
-                if session['subject']['code'] == subject_code:
-                    acquisitions = fw.get_session_acquisitions(session.id)
-                    for acquisition in acquisitions:
-                        for afile in acquisition.files:
-                            full_path = 'input/' + afile.name
-                            if os.path.isfile(full_path):
-                                log.info('File exists ' + afile.name)
-                            else:
-                                log.info('Downloading ' + afile.name)
-                                acquisition.download_file(afile.name, full_path)
-                            niftis.append(full_path)
+            sessions = context.gear_dict['subject'].sessions()
+            for session in sessions:
+                acquisitions = fw.get_session_acquisitions(session.id)
+                for acquisition in acquisitions:
+                    for afile in acquisition.files:
+                        full_path = 'input/' + afile.name
+                        if os.path.isfile(full_path):
+                            log.warning('File exists ' + afile.name)
+                        else:
+                            log.info('Downloading ' + afile.name)
+                            acquisition.download_file(afile.name, full_path)
+                        niftis.append(full_path)
 
             context.gear_dict['niftis'] = niftis
 
@@ -211,27 +225,26 @@ def set_up_data(context, log):
 
 
 def execute(context, log):
+    """Run the Freesurfer Longitudinal Pipeline"""
     try:
 
         # Don't run if there were errors or if this is a dry run
         ok_to_run = True
+        dry = False
+        ret = 1 # assume the worst
 
         if len(context.gear_dict['errors']) > 0:
             ok_to_run = False
-            result = sp.CompletedProcess
             ret = 1
-            log.info('Command was NOT run because of previous errors.')
+            log.info('Commands were NOT run because of previous errors.')
 
         elif context.config['gear-dry-run']:
-            ok_to_run = False
-            result = sp.CompletedProcess
-            ret = 0
-            e = 'gear-dry-run is set: Command was NOT run.'
+            dry = True
+            e = 'gear-dry-run is set: Commands were NOT run.'
             log.warning(e)
             context.gear_dict['warnings'].append(e)
             utils.dry_run.pretend_it_ran(context)
 
-        ret = 1 # assume the worst
         if ok_to_run:
 
             # Create output directory
@@ -243,8 +256,6 @@ def execute(context, log):
             # ------------------------- #
             # The longitudinal pipeline #
             # ------------------------- #
-            dry = False
-            dry = True
 
             subjects_dir = '/opt/freesurfer/subjects/'
             output_dir = context.gear_dict['output_analysisid_dir']
@@ -262,41 +273,44 @@ def execute(context, log):
                     log.info('Link exists ' + link)
 
             # Run cross-sectional analysis on each nifti
-            vid = 1
+            visit_id = 1
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -s ' + "{:03d}".format(vid) + ' -i ' + nifti +\
-                      ' -all -qcache '
+                cmd = 'recon-all -s ' + "{:03d}".format(visit_id) + ' -i ' + \
+                      nifti + ' -all -qcache '
                 if dry:
-                    print('Not running: ' + cmd)
+                    log.info('Not running: ' + cmd)
                     ret = 0
                 else:
+                    log.info('Running: ' + cmd)
                     ret = run(cmd)
-                vid += 1
+                visit_id += 1
 
             # Create template
-            vid = 1
+            visit_id = 1
             cmd = 'recon-all -base BASE '
             for nifti in context.gear_dict['niftis']:
-                cmd += '-tp ' + "{:03d}".format(vid) + ' '
-                vid += 1
+                cmd += '-tp ' + "{:03d}".format(visit_id) + ' '
+                visit_id += 1
             cmd += '-all -qcache '
             if dry:
-                print('Not running: ' + cmd)
+                log.info('Not running: ' + cmd)
                 ret = 0
             else:
+                log.info('Running: ' + cmd)
                 ret = run(cmd)
 
             # Run longitudinal on each time point
-            vid = 1
+            visit_id = 1
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -long ' + "{:03d}".format(vid) + \
+                cmd = 'recon-all -long ' + "{:03d}".format(visit_id) + \
                       ' BASE -all -qcache'
                 if dry:
-                    print('Not running: ' + cmd)
+                    log.info('Not running: ' + cmd)
                     ret = 0
                 else:
+                    log.info('Running: ' + cmd)
                     ret = run(cmd)
-                vid += 1
+                visit_id += 1
 
         log.info('Return code: ' + str(ret))
 
@@ -369,8 +383,6 @@ if __name__ == '__main__':
     context = flywheel.GearContext()
 
     log = initialize(context)
-
-    create_command(context, log)
 
     if len(context.gear_dict['errors']) == 0:
         set_up_data(context, log)

@@ -47,6 +47,8 @@ def get_inputs_and_args(context):
     
     context.gear_dict['param_list'] =  params
 
+    log.debug(repr(params))
+
 
 def validate(context):
     """
