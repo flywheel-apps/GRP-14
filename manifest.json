@@ -2,12 +2,12 @@
   "name": "grp-14",
   "label": "GRP-14: Freesurfer Longitudinal Analysis Pipeline",
   "description": "Freesurfer (6.0.1-5) This app implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. The Freesurfer longitudinal pipeline is used to created subject specific templates.  The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz.",
-  "version": "0.0.0_6.0.1-5",
+  "version": "0.0.1_6.0.1-5",
   "custom": {
-    "docker-image": "flywheel/grp-14:0.0.0_6.0.1-5",
+    "docker-image": "flywheel/grp-14:0.0.1_6.0.1-5",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/grp-14:0.0.0_6.0.1-5"
+      "image": "flywheel/grp-14:0.0.1_6.0.1-5"
     },
     "flywheel": {
       "suite": "FreeSurfer"
@@ -169,7 +169,7 @@
     "VIRTUAL_ENV": "/opt/venv",
     "PATH": "/opt/venv/bin:/opt/freesurfer/bin:/opt/freesurfer/fsfast/bin:/opt/freesurfer/tktools:/opt/freesurfer/mni/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   },
-  "command": "python3.6 run.py",
+  "command": "python3 run.py",
   "author": "http://surfer.nmr.mgh.harvard.edu/",
   "maintainer": "Flywheel <support@flywheel.io>",
   "cite": "https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferMethodsCitation",
