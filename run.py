@@ -311,7 +311,7 @@ def execute(context, log):
             for nifti in context.gear_dict['niftis']:
                 cmd += '-tp ' + "{:03d}".format(visit_id) + ' '
                 visit_id += 1
-            cmd += '-all -qcache '
+            cmd += '-all '
             if dry:
                 log.info('Not running: ' + cmd)
                 ret = 0
@@ -323,7 +323,7 @@ def execute(context, log):
             visit_id = 1
             for nifti in context.gear_dict['niftis']:
                 cmd = 'recon-all -long ' + "{:03d}".format(visit_id) + \
-                      ' BASE -all -qcache'
+                      ' BASE -all'
                 if dry:
                     log.info('Not running: ' + cmd)
                     ret = 0
