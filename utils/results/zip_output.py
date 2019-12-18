@@ -2,7 +2,7 @@
 
 import os
 import logging
-import subprocess as sp
+from zipfile import ZipFile, ZIP_DEFLATED
 
 
 log = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def zip_output(context):
     dest_zip = os.path.join(context.output_dir,file_name)
 
     # The destination id is used as the subdirectory to put results into
-    full_path = context.gear_dict['output_analysisid_dir']
+    full_path = context.output_dir + '/' + context.destination['id']
     actual_dir = os.path.basename(full_path)
 
     if os.path.exists(full_path):
@@ -45,8 +45,15 @@ def zip_output(context):
         log.info(
             'Zipping ' + actual_dir + ' directory to ' + dest_zip + '.'
         )
-        command = ['zip', '-q', '-r', dest_zip, actual_dir]
-        result = sp.run(command, check=True)
+        #command = ['zip', '-q', '-r', dest_zip, actual_dir]
+        #result = sp.run(command, check=True)
+
+        outzip = ZipFile(dest_zip, 'w', ZIP_DEFLATED)
+        for root, _, files in os.walk(actual_dir):
+            for fl in files:
+                fl_path = os.path.join(root,fl)
+                outzip.write(fl_path)
+        outzip.close()
 
     else:
 
