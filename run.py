@@ -51,6 +51,7 @@ from utils.fly.load_manifest_json import load_manifest_json
 from utils.fly.make_file_name_safe import make_file_name_safe
 
 from utils.results.set_zip_name import set_zip_head
+from utils.results.zip_output import zip_output
 
 import utils.dry_run
 
@@ -205,7 +206,7 @@ def set_up_data(context, log):
 
                     for afile in acquisition.files:
 
-                        # Only run on T1 nifti files
+                        # Run on ALL T1 nifti files TODO limit this
                         if afile.type == 'nifti' and \
                            'T1' in afile.classification['Measurement']:
 
@@ -276,6 +277,9 @@ def execute(context, log):
             # ------------------------- #
             # The longitudinal pipeline #
             # ------------------------- #
+            options = ''
+            if '3T' in context.config:
+                options += ' -3T'
 
             subjects_dir = '/opt/freesurfer/subjects/'
             output_dir = context.gear_dict['output_analysisid_dir']
@@ -296,7 +300,7 @@ def execute(context, log):
             visit_id = 1
             for nifti in context.gear_dict['niftis']:
                 cmd = 'recon-all -s ' + "{:03d}".format(visit_id) + ' -i ' + \
-                      nifti + ' -all -qcache '
+                      nifti + ' -all -qcache ' + options
                 if dry:
                     log.info('Not running: ' + cmd)
                     ret = 0
@@ -311,7 +315,7 @@ def execute(context, log):
             for nifti in context.gear_dict['niftis']:
                 cmd += '-tp ' + "{:03d}".format(visit_id) + ' '
                 visit_id += 1
-            cmd += '-all '
+            cmd += '-all ' + options
             if dry:
                 log.info('Not running: ' + cmd)
                 ret = 0
@@ -323,7 +327,7 @@ def execute(context, log):
             visit_id = 1
             for nifti in context.gear_dict['niftis']:
                 cmd = 'recon-all -long ' + "{:03d}".format(visit_id) + \
-                      ' BASE -all'
+                      ' BASE -all' + options
                 if dry:
                     log.info('Not running: ' + cmd)
                     ret = 0
@@ -347,31 +351,23 @@ def execute(context, log):
 
     finally:
 
-        if False:
-            # zip entire output/<analysis_id> folder
-            zip_output(context)
+        # zip entire output/<analysis_id> folder
+        zip_output(context)
 
-            # possibly save ALL intermediate output
-            if context.config['gear-save-intermediate-output']:
-                zip_all_intermediate_output(context)
+        # clean up: remove output that was zipped (useful for testing)
+        if os.path.exists(context.gear_dict['output_analysisid_dir']):
+            if not context.config['gear-keep-output']:
 
-            # possibly save intermediate files and folders
-            zip_intermediate_selected(context)
-
-            # clean up: remove output that was zipped
-            if os.path.exists(context.gear_dict['output_analysisid_dir']):
-                if not context.config['gear-keep-output']:
-
-                    shutil.rmtree(context.gear_dict['output_analysisid_dir'])
-                    log.debug('removing output directory "' + 
-                              context.gear_dict['output_analysisid_dir'] + '"')
-
-                else:
-                    log.info('NOT removing output directory "' + 
-                              context.gear_dict['output_analysisid_dir'] + '"')
+                shutil.rmtree(context.gear_dict['output_analysisid_dir'])
+                log.debug('removing output directory "' + 
+                          context.gear_dict['output_analysisid_dir'] + '"')
 
             else:
-                log.info('Output directory does not exist so it cannot be removed')
+                log.info('NOT removing output directory "' + 
+                          context.gear_dict['output_analysisid_dir'] + '"')
+
+        else:
+            log.info('Output directory does not exist so it cannot be removed')
 
         if len(context.gear_dict['warnings']) > 0 :
             msg = 'Previous warnings:\n'
