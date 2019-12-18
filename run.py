@@ -191,19 +191,39 @@ def set_up_data(context, log):
             log.info('Downloading scans for subject "' + subject_code + '"')
 
             niftis = []
+            rpt = 1
             fw = context.client
+
+            # go through all sessions, acquisitions to find files
             sessions = context.gear_dict['subject'].sessions()
+
             for session in sessions:
+
                 acquisitions = fw.get_session_acquisitions(session.id)
+
                 for acquisition in acquisitions:
+
                     for afile in acquisition.files:
-                        full_path = 'input/' + afile.name
-                        if os.path.isfile(full_path):
-                            log.warning('File exists ' + afile.name)
-                        else:
-                            log.info('Downloading ' + afile.name)
-                            acquisition.download_file(afile.name, full_path)
-                        niftis.append(full_path)
+
+                        # Only run on T1 nifti files
+                        if afile.type == 'nifti' and \
+                           'T1' in afile.classification['Measurement']:
+
+                            safe = make_file_name_safe(afile.name, replace_str='_')
+                            full_path = 'input/' + safe
+
+                            while full_path in niftis:  # then repeated name
+                                full_path = 'input/' + str(rpt) + '_' + safe
+                                rpt += 1
+                                
+                            if os.path.isfile(full_path):
+                                log.warning('File exists ' + full_path)
+                            else:
+                                log.info('Downloading ' + afile.name + ' -> ' +\
+                                         full_path)
+                                acquisition.download_file(afile.name, full_path)
+
+                            niftis.append(full_path)
 
             context.gear_dict['niftis'] = niftis
 
