@@ -41,10 +41,11 @@ import sys
 import logging
 import shutil
 import json
+import psutil
 
 import flywheel
 
-from utils.licenses.freesurfer import find_freesurfer_license
+from utils.license.freesurfer import find_freesurfer_license
 
 from utils.fly.custom_log import custom_log 
 from utils.fly.load_manifest_json import load_manifest_json 
@@ -99,6 +100,15 @@ def initialize(context):
 
     # Instantiate custom gear dictionary to hold "gear global" info
     context.gear_dict = {}
+
+    # get # cpu's to set -openmp
+    cpu_count = str(psutil.cpu_count())
+    log.debug('psutil.cpu_count()= ' + cpu_count)
+    log.debug('psutil.virtual_memory().total= {:4.1f} GiB'.format(
+                      psutil.virtual_memory().total / (1024 ** 3)))
+    log.debug('psutil.virtual_memory().available= {:4.1f} GiB'.format(
+                      psutil.virtual_memory().available / (1024 ** 3)))
+    context.gear_dict['cpu_count'] = cpu_count
 
     # The main command line command to be run (just command, no arguments):
     context.gear_dict['COMMAND'] = 'longitudinal'
@@ -274,10 +284,12 @@ def execute(context, log):
             if not os.path.exists(out):
                 os.makedirs(out)
 
-            # ------------------------- #
-            # The longitudinal pipeline #
-            # ------------------------- #
-            options = ''
+            # ---------------------------------- #
+            # The longitudinal pipeline, huzzah! #
+            # ---------------------------------- #
+
+            options = ' -openmp ' + context.gear_dict['cpu_count'] # zoom zomm
+
             if '3T' in context.config:
                 options += ' -3T'
 
