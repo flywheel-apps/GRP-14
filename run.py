@@ -41,7 +41,6 @@ import sys
 import logging
 import shutil
 import json
-import psutil
 
 import flywheel
 
@@ -102,12 +101,8 @@ def initialize(context):
     context.gear_dict = {}
 
     # get # cpu's to set -openmp
-    cpu_count = str(psutil.cpu_count())
-    log.debug('psutil.cpu_count()= ' + cpu_count)
-    log.debug('psutil.virtual_memory().total= {:4.1f} GiB'.format(
-                      psutil.virtual_memory().total / (1024 ** 3)))
-    log.debug('psutil.virtual_memory().available= {:4.1f} GiB'.format(
-                      psutil.virtual_memory().available / (1024 ** 3)))
+    cpu_count = str(os.cpu_count())
+    log.info('psutil.cpu_count() = ' + cpu_count)
     context.gear_dict['cpu_count'] = cpu_count
 
     # The main command line command to be run (just command, no arguments):
@@ -312,7 +307,7 @@ def execute(context, log):
             visit_id = 1
             for nifti in context.gear_dict['niftis']:
                 cmd = 'recon-all -s ' + "{:03d}".format(visit_id) + ' -i ' + \
-                      nifti + ' -all -qcache ' + options
+                      nifti + ' -all -qcache' + options
                 if dry:
                     log.info('Not running: ' + cmd)
                     ret = 0
@@ -327,7 +322,7 @@ def execute(context, log):
             for nifti in context.gear_dict['niftis']:
                 cmd += '-tp ' + "{:03d}".format(visit_id) + ' '
                 visit_id += 1
-            cmd += '-all ' + options
+            cmd += '-all' + options
             if dry:
                 log.info('Not running: ' + cmd)
                 ret = 0
