@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Run the gear: set up for and call Freesurfer Longitudinal Processing
+"""Run the gear: set up for and call Freesurfer Longitudinal Processing.
 
 Description
   - Cross-sectional and longitudinal FreeSurfer proessing for a
@@ -22,7 +22,7 @@ Freesurfer Output Structure
        <destdir>/<patnum>/BASE
        <destdir>/<patnum>/visit_j.long.BASE
 
-Summary Outputs
+Summary Outputs (produced by abe_freesurfer_tables.py)
   freesurfer_aseg_vol.csv
   freesurfer_aparc_vol_right.csv
   freesurfer_aparc_vol_left.csv
@@ -36,7 +36,6 @@ Original perl coding by: DB Clayton - 2019/09/17
 """
 
 import os
-from subprocess import Popen, PIPE, STDOUT
 import sys
 import logging
 import shutil
@@ -55,26 +54,66 @@ from utils.results.zip_output import zip_output
 
 import utils.dry_run
 
+import utils.system
 
-def run(command):
-    """Call the system to execute a command line command
-       using subprocess.Popen().  Why?  Because the version of
-       python in the BIDS App Freesurfer container is 3.4.
+
+def download_files(context):
+    """Download apropriate files for the subject
+
+    Search through all files for all acquisitions for all sessions for this
+    subject and download only the T1 nifti files.  If file names are repeated
+    a number is prepended. Troublesome characters in the file name are replaced
+    with "_".  The file's original name, full path, and creation date are 
+    logged.
+    
+    Args:
+        context (dict): the gear context 
+        See https://flywheel-io.github.io/core/branches/master/python/sdk_gears.html
+
+    Returns:
+        Sets context.gear_dict['niftis'] to a list of the local paths to each
+        file.
     """
-    log.info('Running: ' + command)
-    ignore_errors=False
-    process = Popen(command, stdout=PIPE, stderr=STDOUT, shell=True, 
-                    env=context.gear_dict['environ'])
-    while True:
-        line = process.stdout.readline()
-        line = str(line, 'utf-8')[:-1]
-        print(line)
-        if line == '' and process.poll() is not None:
-            break
-    if process.returncode != 0 and not ignore_errors:
-        raise Exception("Non zero return code: %d" % process.returncode)
 
-    return process.returncode
+    niftis = []
+    rpt = 1
+    fw = context.client
+
+    # go through all sessions, acquisitions to find files
+    sessions = context.gear_dict['subject'].sessions()
+
+    for session in sessions:
+
+        acquisitions = fw.get_session_acquisitions(session.id)
+
+        for acquisition in acquisitions:
+
+            for afile in acquisition.files:
+
+                # Run on ALL T1 nifti files TODO limit this
+                if afile.type == 'nifti' and \
+                   'T1' in afile.classification['Measurement']:
+
+                    safe = make_file_name_safe(afile.name, replace_str='_')
+                    full_path = 'input/' + safe
+
+                    while full_path in niftis:  # then repeated name
+                        full_path = 'input/' + str(rpt) + '_' + safe
+                        rpt += 1
+                        
+                    if os.path.isfile(full_path):
+                        log.info('File exists ' + afile.name + ' -> ' +\
+                             full_path + ' created ' + 
+                             acquisition.original_timestamp.isoformat())
+                    else:
+                        log.info('Downloading ' + afile.name + ' -> ' +\
+                             full_path + ' created ' + 
+                             acquisition.original_timestamp.isoformat())
+                        acquisition.download_file(afile.name, full_path)
+
+                    niftis.append(full_path)
+
+    context.gear_dict['niftis'] = niftis
 
 
 def initialize(context):
@@ -125,6 +164,7 @@ def initialize(context):
         context.gear_dict['project_label'] = project.label
         context.gear_dict['project_label_safe'] = \
             make_file_name_safe(project.label, '_')
+        log.info('Project label is "' + context.gear_dict['project_label'] +'"')
     else:
         context.gear_dict['project_label'] = 'unknown_project'
         context.gear_dict['project_label_safe'] = 'unknown_project'
@@ -138,6 +178,7 @@ def initialize(context):
         context.gear_dict['subject_code'] = subject.code
         context.gear_dict['subject_code_safe'] = \
             make_file_name_safe(subject.code, '_')
+        log.info('Subject code is "' + context.gear_dict['subject_code'] + '"')
     else:
         context.gear_dict['subject_code'] = 'unknown_subject'
         context.gear_dict['subject_code_safe'] = 'unknown_subject'
@@ -150,6 +191,7 @@ def initialize(context):
         context.gear_dict['session_label'] = session.label
         context.gear_dict['session_label_safe'] = \
             make_file_name_safe(session.label, '_')
+        log.info('Session label is "' + context.gear_dict['session_label'] +'"')
     else:
         context.gear_dict['session_label'] = 'unknown_session'
         context.gear_dict['session_label_safe'] = 'unknown_session'
@@ -161,7 +203,7 @@ def initialize(context):
     # in the output/ directory, add extra analysis_id directory name for easy
     #  zipping of final outputs to return.
     context.gear_dict['output_analysisid_dir'] = \
-        context.output_dir + '/' + context.destination['id'] + '/subjects'
+        context.output_dir + '/' + context.destination['id'] + '/ABE4869g'
 
     # grab environment for gear
     with open('/tmp/gear_environ.json', 'r') as f:
@@ -196,42 +238,8 @@ def set_up_data(context, log):
             subject_code = context.gear_dict['subject_code']
             log.info('Downloading scans for subject "' + subject_code + '"')
 
-            niftis = []
-            rpt = 1
-            fw = context.client
-
-            # go through all sessions, acquisitions to find files
-            sessions = context.gear_dict['subject'].sessions()
-
-            for session in sessions:
-
-                acquisitions = fw.get_session_acquisitions(session.id)
-
-                for acquisition in acquisitions:
-
-                    for afile in acquisition.files:
-
-                        # Run on ALL T1 nifti files TODO limit this
-                        if afile.type == 'nifti' and \
-                           'T1' in afile.classification['Measurement']:
-
-                            safe = make_file_name_safe(afile.name, replace_str='_')
-                            full_path = 'input/' + safe
-
-                            while full_path in niftis:  # then repeated name
-                                full_path = 'input/' + str(rpt) + '_' + safe
-                                rpt += 1
-                                
-                            if os.path.isfile(full_path):
-                                log.warning('File exists ' + full_path)
-                            else:
-                                log.info('Downloading ' + afile.name + ' -> ' +\
-                                         full_path)
-                                acquisition.download_file(afile.name, full_path)
-
-                            niftis.append(full_path)
-
-            context.gear_dict['niftis'] = niftis
+            # Grab all T1 nifti files for this subject
+            download_files(context)
 
         elif context.gear_dict['run_level'] == 'session':
 
@@ -241,7 +249,8 @@ def set_up_data(context, log):
             raise Exception(msg)
 
         else:
-            msg = 'This job is not being run at the project subject or session level'
+            msg = 'This job is not being run at the project subject or session'\
+                  ' level'
             raise TypeError(msg)
 
     except Exception as e:
@@ -257,11 +266,12 @@ def execute(context, log):
         # Don't run if there were errors or if this is a dry run
         ok_to_run = True
         dry = False
-        ret = 1 # assume the worst
+        ret = []  # return codes from all runs
+        return_code = 1  # assume the worst
 
         if len(context.gear_dict['errors']) > 0:
             ok_to_run = False
-            ret = 1
+            ret.append(1)
             log.info('Commands were NOT run because of previous errors.')
 
         elif context.config['gear-dry-run']:
@@ -304,52 +314,60 @@ def execute(context, log):
                     log.info('Link exists ' + link)
 
             # Run cross-sectional analysis on each nifti
-            visit_id = 1
+            scrnum = 1
+            visit = 'W23'
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -s ' + "{:03d}".format(visit_id) + ' -i ' + \
-                      nifti + ' -all -qcache' + options
+                cmd = 'recon-all -s ' + "{:04d}-".format(scrnum) + visit + \
+                      ' -i ' + nifti + ' -all -qcache' + options
                 if dry:
                     log.info('Not running: ' + cmd)
-                    ret = 0
                 else:
                     log.info('Running: ' + cmd)
-                    ret = run(cmd)
-                visit_id += 1
+                    ret.append(utils.system.run(context, cmd))
+                scrnum += 1
 
             # Create template
-            visit_id = 1
+            scrnum = 1
             cmd = 'recon-all -base BASE '
             for nifti in context.gear_dict['niftis']:
-                cmd += '-tp ' + "{:03d}".format(visit_id) + ' '
-                visit_id += 1
+                cmd += '-tp ' + "{:03d}".format(scrnum) + ' '
+                scrnum += 1
             cmd += '-all' + options
             if dry:
                 log.info('Not running: ' + cmd)
-                ret = 0
             else:
                 log.info('Running: ' + cmd)
-                ret = run(cmd)
+                ret.append(utils.system.run(context, cmd))
 
             # Run longitudinal on each time point
-            visit_id = 1
+            scrnum = 1
             for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -long ' + "{:03d}".format(visit_id) + \
+                cmd = 'recon-all -long ' + "{:04d}-".format(scrnum) + visit + \
                       ' BASE -all' + options
                 if dry:
                     log.info('Not running: ' + cmd)
-                    ret = 0
                 else:
                     log.info('Running: ' + cmd)
-                    ret = run(cmd)
-                visit_id += 1
+                    ret.append(utils.system.run(context, cmd))
+                scrnum += 1
 
-        log.info('Return code: ' + str(ret))
+            # run asegstats2table and aparcstats2table to create tables from
+            # aseg.stats and ?h.aparc.stats.  Then modify the results. 
+            # abe_freesurfer_tables.pl
+            os.chdir(out)
+            cmd = '/flywheel/v0/abe_freesurfer_tables.pl .'
+            log.info('Running: ' + cmd)
+            ret.append(utils.system.run(context, cmd))
 
-        if ret == 0:
+        log.info('Return codes: ' + repr(ret))
+
+        if all(rr == 0 for rr in ret):
             log.info('Command successfully executed!')
+            return_code = 0
 
         else:
             log.info('Command failed.')
+            return_code = 1
 
     except Exception as e:
         context.gear_dict['errors'].append(e)
@@ -365,9 +383,9 @@ def execute(context, log):
         if os.path.exists(context.gear_dict['output_analysisid_dir']):
             if not context.config['gear-keep-output']:
 
-                shutil.rmtree(context.gear_dict['output_analysisid_dir'])
-                log.debug('removing output directory "' + 
-                          context.gear_dict['output_analysisid_dir'] + '"')
+                path = context.output_dir + '/' + context.destination['id']
+                log.debug('removing output directory "' + path + '"')
+                shutil.rmtree(path)
 
             else:
                 log.info('NOT removing output directory "' + 
@@ -383,7 +401,8 @@ def execute(context, log):
                     # show string
                     msg += '  Warning: ' + str(err) + '\n'
                 else:  # show type (of warning) and warning message
-                    msg += '  ' + str(type(err)).split("'")[1] + ': ' + str(err) + '\n'
+                    msg += '  ' + str(type(err)).split("'")[1] + ': ' + \
+                           str(err) + '\n'
             log.info(msg)
 
         if len(context.gear_dict['errors']) > 0 :
@@ -393,12 +412,13 @@ def execute(context, log):
                     # show string
                     msg += '  Error msg: ' + str(err) + '\n'
                 else:  # show type (of error) and error message
-                    msg += '  ' + str(type(err)).split("'")[1] + ': ' + str(err) + '\n'
+                    msg += '  ' + str(type(err)).split("'")[1] + ': ' + \
+                           str(err) + '\n'
             log.info(msg)
-            ret = 1
+            return_code = 1
 
-        log.info('Gear is done.  Returning '+str(ret))
-        os.sys.exit(ret)
+        log.info('Gear is done.  Returning '+str(return_code))
+        os.sys.exit(return_code)
  
 
 if __name__ == '__main__':

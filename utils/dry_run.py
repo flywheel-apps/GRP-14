@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 import sys
 
+import utils.system
 
 log = logging.getLogger(__name__)
 
@@ -35,38 +36,15 @@ def pretend_it_ran(context):
 
 
     # Output diredtory
-    path = 'output/' + context.destination['id'] + '/'
-
     log.info('Creating fake output in ' + path)
+    path = 'output/' + context.destination['id'] + '/'
+    if os.path.exists(path):
+        log.info('path already exists: ' + path)
+    else:
+        os.makedirs(path)
+    os.chdir(path)
+    cmd = 'tar zxf ../../ABE4869g.tgz'
+    utils.system.run(context, cmd)
 
-    files = [path + 'somedir/logs/CITATION.md',
-             path + 'somedir/sub-TOME3024/ses-Session2/anat/' + \
-             'sub-TOME3024_ses-Session2_acq-MPR_from-orig_to-T1w_mode-image_xfm.txt',
-             path + 'freesurfer/fsaverage/mri/subcort.prob.log']
-
-    for ff in files:
-        if os.path.exists(ff):
-            log.debug('Exists: ' + ff)
-        else:
-            log.debug('Creating: ' + ff)
-            dir_name = os.path.dirname(ff)
-            os.makedirs(dir_name)
-            Path(ff).touch(mode=0o777, exist_ok=True)
-
-    html = """<html>
-    <head> 
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>sub-TOME3024</title>
-    </head>
-    <body>
-    <h1>sub-TOME3024</h1>
-    <p>This is a test html file.&nbsp; How do you love it?<br>
-    </p>
-    </body>
-    </html>"""
-    ff = path + 'somedir/sub-TOME3024.html'
-    with open(ff,'w') as fp:
-        fp.write(html)
-    log.debug('Creating: ' + ff)
 
 # vi:set autoindent ts=4 sw=4 expandtab : See Vim, :help 'modeline'

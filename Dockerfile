@@ -27,8 +27,11 @@ RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.du
 # Copy executable/manifest to Gear
 COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY utils ${FLYWHEEL}/utils
+COPY abe_freesurfer_tables.pl ${FLYWHEEL}/abe_freesurfer_tables.pl
+COPY ABE4869g.tgz ${FLYWHEEL}/ABE4869g.tgz
 COPY run.py ${FLYWHEEL}/run.py
 
 # Configure entrypoint
+RUN chmod a+x ${FLYWHEEL}/abe_freesurfer_tables.pl
 RUN chmod a+x ${FLYWHEEL}/run.py
 ENTRYPOINT ["/flywheel/v0/run.py"]
