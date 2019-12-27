@@ -75,6 +75,14 @@ def download_files(context):
         file.
     """
 
+
+    input_path = 'input/'
+    if os.path.isdir(input_path):
+        log.debug('Path already exists: ' + input_path)
+    else:
+        log.debug('Creating: ' + input_path)
+        os.mkdir(input_path)
+
     niftis = []
     rpt = 1
     fw = context.client
@@ -95,10 +103,10 @@ def download_files(context):
                    'T1' in afile.classification['Measurement']:
 
                     safe = make_file_name_safe(afile.name, replace_str='_')
-                    full_path = 'input/' + safe
+                    full_path = input_path + safe
 
                     while full_path in niftis:  # then repeated name
-                        full_path = 'input/' + str(rpt) + '_' + safe
+                        full_path = input_path + str(rpt) + '_' + safe
                         rpt += 1
                         
                     if os.path.isfile(full_path):
@@ -115,6 +123,30 @@ def download_files(context):
 
     context.gear_dict['niftis'] = niftis
 
+
+def update_gear_status(key, value):
+    """Set destination's 'info' to indicate what's happening"""
+
+    fw = context.client
+    dest_container = fw.get(context.destination['id'])
+    kwargs = {key: value}
+    dest_container.update_info(kwargs)
+    log.info(repr(kwargs))
+
+
+def set_recon_all_status(subject_dir):
+    """Set final status to last line of recon-all-status.log."""
+
+    path = context.gear_dict['output_analysisid_dir'] + '/' + \
+           subject_dir + '/scripts/recon-all-status.log'
+    if os.path.exists(path):
+        with open(path, 'r') as fh:
+            for line in fh:
+                pass
+            last_line = line
+    else:
+        last_line = 'recon-all-status.log is missing'
+    update_gear_status(subject_dir, last_line)
 
 def initialize(context):
     """Initialize logging and add informaiton to gear context:
@@ -314,10 +346,18 @@ def execute(context, log):
                     log.info('Link exists ' + link)
 
             # Run cross-sectional analysis on each nifti
-            scrnum = 1
             visit = 'W23'
-            for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -s ' + "{:04d}-".format(scrnum) + visit + \
+            scrnum = 1
+            num_niftis = str(len(context.gear_dict['niftis']))
+
+            for nn, nifti in enumerate(context.gear_dict['niftis']):
+
+                subject_dir = "{:04d}-".format(scrnum) + visit
+
+                update_gear_status('longitudinal-step', 'cross-sectional ' + \
+                    subject_dir + ' ' + str(nn + 1) + '/' + num_niftis)
+
+                cmd = 'recon-all -s ' + subject_dir + \
                       ' -i ' + nifti + ' -all -qcache' + options
                 if dry:
                     log.info('Not running: ' + cmd)
@@ -326,12 +366,21 @@ def execute(context, log):
                     ret.append(utils.system.run(context, cmd))
                 scrnum += 1
 
+                set_recon_all_status(subject_dir)
+
             # Create template
             scrnum = 1
             cmd = 'recon-all -base BASE '
+
+            update_gear_status('longitudinal-step', 'Create template')
+
             for nifti in context.gear_dict['niftis']:
-                cmd += '-tp ' + "{:03d}".format(scrnum) + ' '
+
+                subject_dir = "{:04d}-".format(scrnum) + visit
+
+                cmd += '-tp ' + subject_dir + ' '
                 scrnum += 1
+
             cmd += '-all' + options
             if dry:
                 log.info('Not running: ' + cmd)
@@ -339,17 +388,28 @@ def execute(context, log):
                 log.info('Running: ' + cmd)
                 ret.append(utils.system.run(context, cmd))
 
+            set_recon_all_status('BASE')
+
             # Run longitudinal on each time point
             scrnum = 1
-            for nifti in context.gear_dict['niftis']:
-                cmd = 'recon-all -long ' + "{:04d}-".format(scrnum) + visit + \
-                      ' BASE -all' + options
+            for nn, nifti in enumerate(context.gear_dict['niftis']):
+
+                subject_dir = "{:04d}-".format(scrnum) + visit
+
+                update_gear_status('longitudinal-step', 'longitudinal ' + 
+                    subject_dir + ' ' + str(nn + 1) + '/' + num_niftis)
+
+                cmd = 'recon-all -long ' + subject_dir + ' BASE -all' + options
                 if dry:
                     log.info('Not running: ' + cmd)
                 else:
                     log.info('Running: ' + cmd)
                     ret.append(utils.system.run(context, cmd))
                 scrnum += 1
+
+                set_recon_all_status(subject_dir + '.long.BASE')
+
+            update_gear_status('longitudinal-step', 'completed ')
 
             # run asegstats2table and aparcstats2table to create tables from
             # aseg.stats and ?h.aparc.stats.  Then modify the results. 
