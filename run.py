@@ -192,6 +192,30 @@ def set_recon_all_status(subject_dir):
         last_line = 'recon-all-status.log is missing'
     update_gear_status(subject_dir, last_line)
 
+def update_gear_status(key, value):
+    """Set destination's 'info' to indicate what's happening"""
+
+    fw = context.client
+    dest_container = fw.get(context.destination['id'])
+    kwargs = {key: value}
+    dest_container.update_info(kwargs)
+    log.info(repr(kwargs))
+
+
+def set_recon_all_status(subject_dir):
+    """Set final status to last line of recon-all-status.log."""
+
+    path = context.gear_dict['output_analysisid_dir'] + '/' + \
+           subject_dir + '/scripts/recon-all-status.log'
+    if os.path.exists(path):
+        with open(path, 'r') as fh:
+            for line in fh:
+                pass
+            last_line = line
+    else:
+        last_line = 'recon-all-status.log is missing'
+    update_gear_status(subject_dir, last_line)
+
 def initialize(context):
     """Initialize logging and add informaiton to gear context:
         context.gear_dict:
@@ -430,6 +454,8 @@ def execute(context, log):
 
                 set_recon_all_status(subject_dir)
 
+                set_recon_all_status(subject_dir)
+
             # Create template
             cmd = 'recon-all -base BASE '
 
@@ -471,6 +497,10 @@ def execute(context, log):
                 set_recon_all_status(subject_dir + '.long.BASE')
 
             update_gear_status('longitudinal-step', 'all steps completed')
+
+                set_recon_all_status(subject_dir + '.long.BASE')
+
+            update_gear_status('longitudinal-step', 'completed ')
 
             # run asegstats2table and aparcstats2table to create tables from
             # aseg.stats and ?h.aparc.stats.  Then modify the results.
