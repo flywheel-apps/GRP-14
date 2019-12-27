@@ -500,7 +500,7 @@ def execute(context, log):
 
                 set_recon_all_status(subject_dir + '.long.BASE')
 
-            update_gear_status('longitudinal-step', 'completed ')
+            update_gear_status('longitudinal-step', 'all steps completed')
 
             # run asegstats2table and aparcstats2table to create tables from
             # aseg.stats and ?h.aparc.stats.  Then modify the results.
