@@ -83,7 +83,11 @@ def download_files(context):
         log.debug('Creating: ' + input_path)
         os.mkdir(input_path)
 
+    # These three lists will have the same number of elements so the ith elements
+    # in each refer to the same file/acquisition.
     niftis = []
+    file_names = []
+    createds = []
     rpt = 1
     fw = context.client
 
@@ -104,6 +108,7 @@ def download_files(context):
 
                     safe = make_file_name_safe(afile.name, replace_str='_')
                     full_path = input_path + safe
+                    created = acquisition.original_timestamp.isoformat()
 
                     while full_path in niftis:  # then repeated name
                         full_path = input_path + str(rpt) + '_' + safe
@@ -111,17 +116,19 @@ def download_files(context):
                         
                     if os.path.isfile(full_path):
                         log.info('File exists ' + afile.name + ' -> ' +\
-                             full_path + ' created ' + 
-                             acquisition.original_timestamp.isoformat())
+                             full_path + ' created ' + created)
                     else:
                         log.info('Downloading ' + afile.name + ' -> ' +\
-                             full_path + ' created ' + 
-                             acquisition.original_timestamp.isoformat())
+                             full_path + ' created ' + created)
                         acquisition.download_file(afile.name, full_path)
 
                     niftis.append(full_path)
+                    file_names.append(afile.name)
+                    createds.append(created)
 
     context.gear_dict['niftis'] = niftis
+    context.gear_dict['file_names'] = file_names
+    context.gear_dict['createds'] = createds
 
 
 def update_gear_status(key, value):
@@ -355,7 +362,9 @@ def execute(context, log):
                 subject_dir = "{:04d}-".format(scrnum) + visit
 
                 update_gear_status('longitudinal-step', 'cross-sectional ' + \
-                    subject_dir + ' ' + str(nn + 1) + '/' + num_niftis)
+                    subject_dir + ' (' + str(nn + 1) + ' of ' + num_niftis + \
+                    ') "' + context.gear_dict['file_names'][nn] + '" ' + \
+                    context.gear_dict['createds'][nn])
 
                 cmd = 'recon-all -s ' + subject_dir + \
                       ' -i ' + nifti + ' -all -qcache' + options
@@ -397,7 +406,9 @@ def execute(context, log):
                 subject_dir = "{:04d}-".format(scrnum) + visit
 
                 update_gear_status('longitudinal-step', 'longitudinal ' + 
-                    subject_dir + ' ' + str(nn + 1) + '/' + num_niftis)
+                    subject_dir + ' (' + str(nn + 1) + ' of ' + num_niftis + \
+                    ') "' + context.gear_dict['file_names'][nn] + '" ' + \
+                    context.gear_dict['createds'][nn])
 
                 cmd = 'recon-all -long ' + subject_dir + ' BASE -all' + options
                 if dry:
@@ -409,7 +420,7 @@ def execute(context, log):
 
                 set_recon_all_status(subject_dir + '.long.BASE')
 
-            update_gear_status('longitudinal-step', 'completed ')
+            update_gear_status('longitudinal-step', 'all steps completed')
 
             # run asegstats2table and aparcstats2table to create tables from
             # aseg.stats and ?h.aparc.stats.  Then modify the results. 
