@@ -1,10 +1,9 @@
 # GRP-14
-Freesurfer Longitudinal Analysis Pipeline
+Freesurfer Longitudinal Analysis Pipeline (6.0.1-5)
 
-Freesurfer (6.0.1-5) This app implements Freesurfer's longitudinal
-analysis. It reconstructs the surface for each subject individually
-and then creates a study specific template. The Freesurfer longitudinal
-pipeline is used to created subject specific templates. 
+This gear implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually
+and then creates an unbiased template from all time points. Finally, it longitudinally process all timepoints and 
+produces summary statistics. 
 
 The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz.
 
