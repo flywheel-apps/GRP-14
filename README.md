@@ -17,22 +17,26 @@ A Freesurfer license file must be supplied. This can be done as an input
 file, a configuration option, or as project metadata.  See [this descripiton](https://docs.flywheel.io/hc/en-us/articles/360013235453-How-to-include-a-Freesurfer-license-file-in-order-to-run-the-fMRIPrep-gear-) for more information.
 
 Output is found in Freesurfer's $SUBJECTS_DIR/:
-* <patnum>\_<visit_1>
-* <patnum>\_<visit_2>
-* <patnum>\_<visit_j>
-* BASE
-* <patnum>\_<visit_1>.long.BASE
-* <patnum>\_<visit_2>.long.BASE
-* <patnum>\_<visit_j>.long.BASE
+```
+patnum_visit_1
+patnum_visit_2
+patnum_visit_j
+BASE
+patnum_visit_1.long.BASE
+patnum_visit_2.long.BASE
+patnum_visit_j.long.BASE
+```
 
 Summary outputs are found in $SUBJECTS_DIR/tables/:
-* freesurfer_aseg_vol.csv
-* freesurfer_aparc_vol_right.csv
-* freesurfer_aparc_vol_left.csv
-* freesurfer_aparc_thick_right.csv
-* freesurfer_aparc_thick_left.csv
-* freesurfer_aparc_area_right.csv
-* freesurfer_aparc_area_left.csv
+```
+freesurfer_aseg_vol.csv
+freesurfer_aparc_vol_right.csv
+freesurfer_aparc_vol_left.csv
+freesurfer_aparc_thick_right.csv
+freesurfer_aparc_thick_left.csv
+freesurfer_aparc_area_right.csv
+freesurfer_aparc_area_left.csv
+```
 
 If the T1-weighted scans were acquired on a 3T scanner, set the "3T" 
 configuration option.
