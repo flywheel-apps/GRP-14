@@ -18,36 +18,39 @@ file, a configuration option, or as project metadata.  See [this descripiton](ht
 
 Output is found in Freesurfer's $SUBJECTS_DIR/:
 ```
-patnum_visit_1
-patnum_visit_2
-patnum_visit_j
+scrnum_visit_1
+scrnum_visit_2
+scrnum_visit_j
 BASE
-patnum_visit_1.long.BASE
-patnum_visit_2.long.BASE
-patnum_visit_j.long.BASE
+scrnum_visit_1.long.BASE
+scrnum_visit_2.long.BASE
+scrnum_visit_j.long.BASE
 ```
 
 Summary outputs are found in $SUBJECTS_DIR/tables/:
 ```
-freesurfer_aseg_vol.csv
-freesurfer_aparc_vol_right.csv
-freesurfer_aparc_vol_left.csv
-freesurfer_aparc_thick_right.csv
-freesurfer_aparc_thick_left.csv
-freesurfer_aparc_area_right.csv
-freesurfer_aparc_area_left.csv
+ABE4869g_aseg_vol.csv
+ABE4869g_aparc_vol_right.csv
+ABE4869g_aparc_vol_left.csv
+ABE4869g_aparc_thick_right.csv
+ABE4869g_aparc_thick_left.csv
+ABE4869g_aparc_area_right.csv
+ABE4869g_aparc_area_left.csv
 ```
 
 If the T1-weighted scans were acquired on a 3T scanner, set the "3T" 
 configuration option.
 
-The status of the gear is saved in "Custom Information" for the analysis
-as it is running. Example Flywheel SDK python code to list the status is 
+The status of the gear is saved as it is running in the analysis
+'info' metadata which can be seen in the "Custom Information" tab
+for the analysis on the Flywheel platform.
+Example Flywheel SDK python code to list the status is 
 provided in
 [notebooks/Longitudinal_Status.ipynb](https://github.com/flywheel-apps/GRP-14/blob/dev/notebooks/Longitudinal_Status.ipynb).
 
 ## To Do
-This gear has hardcoded values for "study", "scrnum", and "visit"; the
-first three columns in the summary output spreadsheets.  These will be
-replace by proper values once how to provide them has been decided.
+This gear has hardcoded values for "study" ("ABE4869g" above),
+"scrnum", and "visit"; the first three columns in the summary output
+spreadsheets.  These will be replace by proper values once how to
+provide them has been decided.
 
