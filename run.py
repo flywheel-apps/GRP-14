@@ -22,7 +22,7 @@ Freesurfer Output Structure
        <destdir>/<patnum>/BASE
        <destdir>/<patnum>/visit_j.long.BASE
 
-Summary Outputs (produced by abe_freesurfer_tables.py)
+Summary Outputs (produced by abe_freesurfer_tables.pl)
   freesurfer_aseg_vol.csv
   freesurfer_aparc_vol_right.csv
   freesurfer_aparc_vol_left.csv
@@ -180,7 +180,7 @@ def initialize(context):
 
     # get # cpu's to set -openmp
     cpu_count = str(os.cpu_count())
-    log.info('psutil.cpu_count() = ' + cpu_count)
+    log.info('os.cpu_count() = ' + cpu_count)
     context.gear_dict['cpu_count'] = cpu_count
 
     # The main command line command to be run (just command, no arguments):
