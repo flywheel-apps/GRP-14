@@ -32,6 +32,16 @@
     }
   },
   "config": {
+    "classification_measurement": {
+      "description": "The kind of scan to run on.  Can be a list of [T1 [T2  ...]].  Default is T1 only",
+      "optional": true,
+      "type": "string"
+    },
+    "acquisition_regex": {
+      "description": "A regular expression to find acquisitions to run on.  Default is all acquisitions for the subject.",
+      "optional": true,
+      "type": "string"
+    },
     "3T": {
       "description": "enables the two 3T specific options that recon-all supports: nu intensity correction params, and the special schwartz atlas",
       "optional": true,

@@ -40,6 +40,7 @@ import sys
 import logging
 import shutil
 import json
+import re
 
 import flywheel
 
@@ -91,40 +92,70 @@ def download_files(context):
     rpt = 1
     fw = context.client
 
+    if 'classification_measurement' in context.config:
+        class_meas = context.config['classification_measurement'].split()
+    else:
+        class_meas = ['T1']
+
     # go through all sessions, acquisitions to find files
     sessions = context.gear_dict['subject'].sessions()
 
     for session in sessions:
 
-        acquisitions = fw.get_session_acquisitions(session.id)
+        for acquisition in fw.get_session_acquisitions(session.id):
 
-        for acquisition in acquisitions:
+            if 'acquisition_regex' in context.config:
+                # Skip this acquisition if the regex doesn't match
+                if not re.search(context.config['acquisition_regex'],
+                                 acquisition.label):
+                    log.info('Acquisition "' + acquisition.label + '" ' +
+                             'does not match the given regex.')
+                    continue
+
+                else:
+                    log.info('Found matching acquisition "' + 
+                              acquisition.label + '" ')
 
             for afile in acquisition.files:
 
-                # Run on ALL T1 nifti files TODO limit this
-                if afile.type == 'nifti' and \
-                   'T1' in afile.classification['Measurement']:
+                # Scan must be nifti
+                if afile.type == 'nifti':
 
-                    safe = make_file_name_safe(afile.name, replace_str='_')
-                    full_path = input_path + safe
-                    created = acquisition.original_timestamp.isoformat()
+                    found_one = False
+                    for cm in class_meas:
+                        if cm in afile.classification['Measurement']:
+                            found_one = True
+                            log.info('Found ' + cm + ' file')
 
-                    while full_path in niftis:  # then repeated name
-                        full_path = input_path + str(rpt) + '_' + safe
-                        rpt += 1
+                    if found_one:
+
+                        safe = make_file_name_safe(afile.name, replace_str='_')
+
+                        full_path = input_path + safe
                         
-                    if os.path.isfile(full_path):
-                        log.info('File exists ' + afile.name + ' -> ' +\
-                             full_path + ' created ' + created)
-                    else:
-                        log.info('Downloading ' + afile.name + ' -> ' +\
-                             full_path + ' created ' + created)
-                        acquisition.download_file(afile.name, full_path)
+                        if acquisition.original_timestamp:
+                            created = acquisition.original_timestamp.isoformat()
+                        else:
+                            created = 'unknown'
 
-                    niftis.append(full_path)
-                    file_names.append(afile.name)
-                    createds.append(created)
+                        while full_path in niftis:  # then repeated name
+                            full_path = input_path + str(rpt) + '_' + safe
+                            rpt += 1
+                            
+                        if os.path.isfile(full_path):
+                            log.info('File exists ' + afile.name + ' -> ' +\
+                                 full_path + ' created ' + created)
+                        else:
+                            log.info('Downloading ' + afile.name + ' -> ' +\
+                                 full_path + ' created ' + created)
+                            acquisition.download_file(afile.name, full_path)
+
+                        niftis.append(full_path)
+                        file_names.append(afile.name)
+                        createds.append(created)
+
+                    else:
+                        log.info('Ignoring ' + afile.name)
 
     context.gear_dict['niftis'] = niftis
     context.gear_dict['file_names'] = file_names
