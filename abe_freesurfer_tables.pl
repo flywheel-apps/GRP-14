@@ -35,6 +35,7 @@
 # modules
 use Cwd qw(getcwd abs_path);
 use File::Temp qw(tempfile tempdir);
+use File::Basename;
 
 # system definitions
 $aseg = '/opt/freesurfer/bin/asegstats2table';
@@ -119,13 +120,16 @@ sub modify_abe {
   my($csv, $mod, @list, $study, $x, $err);
 
   # get Study ID from SUBJECTS_DIR
-  if ($ENV{SUBJECTS_DIR} =~ /ABE(4869|4955)g/i) {
-    $study = "ABE$1g";
-    print("Study ID is: $study\n");
-  } else {
-    print("Error: Could not determine Study ID from SUBJECTS_DIR: $ENV{SUBJECTS_DIR}\n");
-    return;
-  }
+  $study = basename($ENV{SUBJECTS_DIR});
+
+  # if ($ENV{SUBJECTS_DIR} =~ /ABE(4869|4955)g/i) {
+
+  #  $study = "ABE$1g";
+  #  print("Study ID is: $study\n");
+  #} else {
+  #  print("Error: Could not determine Study ID from SUBJECTS_DIR: $ENV{SUBJECTS_DIR}\n");
+  #  return;
+  #}
   
   # list all csv files
   opendir(D, '.');
@@ -146,7 +150,7 @@ sub modify_abe {
         s/^(.*?),/study,scrnum,visit,/;  # replace first column in header
       } else {
         $x = $_;
-        $_ =~ s/^(\d{4})-(\w+)\.long\.BASE,/$study,$1,$2,/;
+        $_ =~ s/^(\w+)-(\w+)\.long\.BASE,/$study,$1,$2,/;
         $x eq $_ and $err = 1 and last;
       }
       print(O $_);

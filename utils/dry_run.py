@@ -43,7 +43,7 @@ def pretend_it_ran(context):
     else:
         os.makedirs(path)
     os.chdir(path)
-    cmd = 'tar zxf ../../ABE4869g.tgz'
+    cmd = 'tar zxf ../../dry_run_data.tgz'
     utils.system.run(context, cmd)
 
 

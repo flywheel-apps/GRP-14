@@ -41,6 +41,7 @@ import logging
 import shutil
 import json
 import re
+import glob
 
 import flywheel
 
@@ -89,6 +90,7 @@ def download_files(context):
     niftis = []
     file_names = []
     createds = []
+    visits = []
     rpt = 1
     fw = context.client
 
@@ -98,9 +100,7 @@ def download_files(context):
         class_meas = ['T1']
 
     # go through all sessions, acquisitions to find files
-    sessions = context.gear_dict['subject'].sessions()
-
-    for session in sessions:
+    for session in context.gear_dict['subject'].sessions():
 
         for acquisition in fw.get_session_acquisitions(session.id):
 
@@ -153,6 +153,7 @@ def download_files(context):
                         niftis.append(full_path)
                         file_names.append(afile.name)
                         createds.append(created)
+                        visits.append(make_file_name_safe(session.label, '_'))
 
                     else:
                         log.info('Ignoring ' + afile.name)
@@ -160,6 +161,7 @@ def download_files(context):
     context.gear_dict['niftis'] = niftis
     context.gear_dict['file_names'] = file_names
     context.gear_dict['createds'] = createds
+    context.gear_dict['visits'] = visits
 
 
 def update_gear_status(key, value):
@@ -273,7 +275,8 @@ def initialize(context):
     # in the output/ directory, add extra analysis_id directory name for easy
     #  zipping of final outputs to return.
     context.gear_dict['output_analysisid_dir'] = \
-        context.output_dir + '/' + context.destination['id'] + '/ABE4869g'
+        context.output_dir + '/' + context.destination['id'] + '/' + \
+        context.gear_dict['project_label_safe'] 
 
     # grab environment for gear
     with open('/tmp/gear_environ.json', 'r') as f:
@@ -384,13 +387,13 @@ def execute(context, log):
                     log.info('Link exists ' + link)
 
             # Run cross-sectional analysis on each nifti
-            visit = 'W23'
-            scrnum = 1
+            # study is freesurfer's SUBJECTS_DIR
+            scrnum = context.gear_dict['subject_code_safe'] 
             num_niftis = str(len(context.gear_dict['niftis']))
 
             for nn, nifti in enumerate(context.gear_dict['niftis']):
 
-                subject_dir = "{:04d}-".format(scrnum) + visit
+                subject_dir = scrnum + "-" + context.gear_dict['visits'][nn]
 
                 update_gear_status('longitudinal-step', 'cross-sectional ' + \
                     subject_dir + ' (' + str(nn + 1) + ' of ' + num_niftis + \
@@ -404,22 +407,19 @@ def execute(context, log):
                 else:
                     log.info('Running: ' + cmd)
                     ret.append(utils.system.run(context, cmd))
-                scrnum += 1
 
                 set_recon_all_status(subject_dir)
 
             # Create template
-            scrnum = 1
             cmd = 'recon-all -base BASE '
 
             update_gear_status('longitudinal-step', 'Create template')
 
-            for nifti in context.gear_dict['niftis']:
+            for nn, nifti in enumerate(context.gear_dict['niftis']):
 
-                subject_dir = "{:04d}-".format(scrnum) + visit
+                subject_dir = scrnum + "-" + context.gear_dict['visits'][nn]
 
                 cmd += '-tp ' + subject_dir + ' '
-                scrnum += 1
 
             cmd += '-all' + options
             if dry:
@@ -431,10 +431,10 @@ def execute(context, log):
             set_recon_all_status('BASE')
 
             # Run longitudinal on each time point
-            scrnum = 1
+
             for nn, nifti in enumerate(context.gear_dict['niftis']):
 
-                subject_dir = "{:04d}-".format(scrnum) + visit
+                subject_dir = scrnum + "-" + context.gear_dict['visits'][nn]
 
                 update_gear_status('longitudinal-step', 'longitudinal ' + 
                     subject_dir + ' (' + str(nn + 1) + ' of ' + num_niftis + \
@@ -447,7 +447,6 @@ def execute(context, log):
                 else:
                     log.info('Running: ' + cmd)
                     ret.append(utils.system.run(context, cmd))
-                scrnum += 1
 
                 set_recon_all_status(subject_dir + '.long.BASE')
 
@@ -477,6 +476,12 @@ def execute(context, log):
         log.exception('Unable to execute command.')
 
     finally:
+
+        # Copy summary csv files to top-level output
+        files = glob.glob(context.gear_dict['output_analysisid_dir'] + \
+                         '/tables/*')
+        for ff in files:
+            shutil.copy(ff,context.output_dir)
 
         # zip entire output/<analysis_id> folder
         zip_output(context)

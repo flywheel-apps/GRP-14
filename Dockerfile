@@ -28,7 +28,7 @@ RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.du
 COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY utils ${FLYWHEEL}/utils
 COPY abe_freesurfer_tables.pl ${FLYWHEEL}/abe_freesurfer_tables.pl
-COPY ABE4869g.tgz ${FLYWHEEL}/ABE4869g.tgz
+COPY dry_run_data.tgz ${FLYWHEEL}/dry_run_data.tgz
 COPY run.py ${FLYWHEEL}/run.py
 
 # Configure entrypoint
