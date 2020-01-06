@@ -5,7 +5,7 @@ This gear implements Freesurfer's longitudinal analysis. It reconstructs the sur
 and then creates an unbiased template from all time points. Finally, it longitudinally process all timepoints and 
 produces summary statistics. 
 
-The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz.
+The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.
 
 This gear needs to be run at the [subject level](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject).
 No gear inputs need are required.
@@ -46,10 +46,3 @@ for the analysis on the Flywheel platform.
 Example Flywheel SDK python code to list the status is 
 provided in
 [notebooks/Longitudinal_Status.ipynb](https://github.com/flywheel-apps/GRP-14/blob/dev/notebooks/Longitudinal_Status.ipynb).
-
-## To Do
-This gear has hardcoded values for "study" ("ABE4869g" above),
-"scrnum", and "visit"; the first three columns in the summary output
-spreadsheets.  These will be replace by proper values once how to
-provide them has been decided.
-

@@ -1,13 +1,13 @@
 {
   "name": "grp-14",
   "label": "GRP-14: Freesurfer Longitudinal Analysis Pipeline",
-  "description": "Freesurfer (6.0.1-5) This app implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. The Freesurfer longitudinal pipeline is used to created subject specific templates.  The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz.",
-  "version": "0.0.8_6.0.1-5",
+  "description": "Freesurfer (6.0.1-5) This app implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. The Freesurfer longitudinal pipeline is used to created subject specific templates.  The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.  This must be run at the subject level.",
+  "version": "0.0.13_6.0.1-5",
   "custom": {
-    "docker-image": "flywheel/grp-14:0.0.8_6.0.1-5",
+    "docker-image": "flywheel/grp-14:0.0.13_6.0.1-5",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/grp-14:0.0.8_6.0.1-5"
+      "image": "flywheel/grp-14:0.0.13_6.0.1-5"
     },
     "flywheel": {
       "suite": "FreeSurfer"
@@ -43,8 +43,13 @@
       "type": "string"
     },
     "3T": {
-      "description": "enables the two 3T specific options that recon-all supports: nu intensity correction params, and the special schwartz atlas",
+      "description": "Enables the two 3T specific options that recon-all supports: nu intensity correction params, and the special schwartz atlas",
       "optional": true,
+      "type": "boolean"
+    },
+    "remove_subjects_dir": {
+      "description": "Remove Freesurfer's SUBJECTS_DIR.  Do not save and return all of Freesurfer results.  Default is TRUE: remove, don't save.",
+      "default": true,
       "type": "boolean"
     },
     "gear-log-level": {
@@ -58,19 +63,14 @@
                                 "DEBUG"
                         ]
     },
-    "gear-save-intermediate-output": {
-      "default": false,
-      "description": "Gear will save ALL intermediate output into <command>_work.zip",
-      "type": "boolean"
-    },
     "gear-dry-run": {
       "default": false,
       "description": "Do everything except actually executing the command line",
       "type": "boolean"
     },
-    "gear-keep-output": {
-      "default": false,
-      "description": "Don't delete output.  Output is always zipped into a single file for easy download.  Choose this option to prevent output deletion after zipping.",
+    "gear-zip-output": {
+      "default": true,
+      "description": "Zip output into a single file for easy download and delete the original output so it won't also be downloaded.  This is the default behavior.",
       "type": "boolean"
     },
     "gear-FREESURFER_LICENSE": {
@@ -90,5 +90,5 @@
   "cite": "https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferMethodsCitation",
   "license": "Apache-2.0",
   "source": "https://github.com/flywheel-apps/grp-14",
-  "url": "https://github.com/BIDS-Apps/freesurfer"
+  "url": "https://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing"
 }

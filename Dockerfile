@@ -14,8 +14,6 @@ RUN apt-get update && \
 RUN pip3 install flywheel-sdk==10.4.1 && \
     rm -rf /root/.cache/pip
 
-#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 # Make directory for flywheel spec (v0)
 ENV FLYWHEEL /flywheel/v0
 WORKDIR ${FLYWHEEL}
@@ -27,11 +25,11 @@ RUN python -c 'import os, json; f = open("/tmp/gear_environ.json", "w"); json.du
 # Copy executable/manifest to Gear
 COPY manifest.json ${FLYWHEEL}/manifest.json
 COPY utils ${FLYWHEEL}/utils
-COPY abe_freesurfer_tables.pl ${FLYWHEEL}/abe_freesurfer_tables.pl
+COPY freesurfer_tables.pl ${FLYWHEEL}/freesurfer_tables.pl
 COPY dry_run_data.tgz ${FLYWHEEL}/dry_run_data.tgz
 COPY run.py ${FLYWHEEL}/run.py
 
 # Configure entrypoint
-RUN chmod a+x ${FLYWHEEL}/abe_freesurfer_tables.pl
+RUN chmod a+x ${FLYWHEEL}/freesurfer_tables.pl
 RUN chmod a+x ${FLYWHEEL}/run.py
 ENTRYPOINT ["/flywheel/v0/run.py"]

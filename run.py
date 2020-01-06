@@ -22,7 +22,7 @@ Freesurfer Output Structure
        <destdir>/<patnum>/BASE
        <destdir>/<patnum>/visit_j.long.BASE
 
-Summary Outputs (produced by abe_freesurfer_tables.pl)
+Summary Outputs (produced by freesurfer_tables.pl)
   freesurfer_aseg_vol.csv
   freesurfer_aparc_vol_right.csv
   freesurfer_aparc_vol_left.csv
@@ -454,9 +454,9 @@ def execute(context, log):
 
             # run asegstats2table and aparcstats2table to create tables from
             # aseg.stats and ?h.aparc.stats.  Then modify the results. 
-            # abe_freesurfer_tables.pl
+            # freesurfer_tables.pl
             os.chdir(out)
-            cmd = '/flywheel/v0/abe_freesurfer_tables.pl .'
+            cmd = '/flywheel/v0/freesurfer_tables.pl .'
             log.info('Running: ' + cmd)
             ret.append(utils.system.run(context, cmd))
 
@@ -483,19 +483,30 @@ def execute(context, log):
         for ff in files:
             shutil.copy(ff,context.output_dir)
 
-        # zip entire output/<analysis_id> folder
-        zip_output(context)
+        if context.config['remove_subjects_dir']:
+            # Remove all of Freesurfer's subject  directories
+            paths = glob.glob(context.gear_dict['output_analysisid_dir'] + '/*')
+            for path in paths:
+                if os.path.basename(path) != 'tables':
+                    if os.path.islink(path):
+                        os.unlink(path)
+                        log.debug('removing link "' + path + '"')
+                    elif os.path.isdir(path):
+                        log.debug('removing subject directory "' + path + '"')
+                        shutil.rmtree(path)
 
-        # clean up: remove output that was zipped (useful for testing)
+        # Default config: zip entire output/<analysis_id> folder
         if os.path.exists(context.gear_dict['output_analysisid_dir']):
-            if not context.config['gear-keep-output']:
+            if context.config['gear-zip-output']:
+
+                zip_output(context)
 
                 path = context.output_dir + '/' + context.destination['id']
                 log.debug('removing output directory "' + path + '"')
                 shutil.rmtree(path)
 
             else:
-                log.info('NOT removing output directory "' + 
+                log.info('NOT zipping output directory "' + 
                           context.gear_dict['output_analysisid_dir'] + '"')
 
         else:
