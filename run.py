@@ -212,9 +212,22 @@ def initialize(context):
     context.gear_dict = {}
 
     # get # cpu's to set -openmp
-    cpu_count = str(os.cpu_count())
-    log.info('os.cpu_count() = ' + cpu_count)
-    context.gear_dict['cpu_count'] = cpu_count
+    cpu_count = os.cpu_count()
+    str_cpu_count = str(cpu_count)
+    log.info('os.cpu_count() = ' + str_cpu_count)
+    if 'n_cpus' in context.config:
+        if context.config['n_cpus'] < 1:
+            log.warning('n_cpus < 1, using 1')
+            cpu_count = 1
+            str_cpu_count = str(cpu_count)
+        elif context.config['n_cpus'] <= cpu_count:
+            cpu_count = context.config['n_cpus']
+            str_cpu_count = str(cpu_count)
+            log.info('using n_cpus = ' + str_cpu_count)
+        else:
+            log.warning('n_cpus ' + str(context.config["n_cpus"]) + ' > ' + \
+                         'os.cpu_count(), using ' + str_cpu_count)
+    context.gear_dict['cpu_count'] = str_cpu_count
 
     # The main command line command to be run (just command, no arguments):
     context.gear_dict['COMMAND'] = 'longitudinal'
