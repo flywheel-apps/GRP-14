@@ -47,8 +47,8 @@ import flywheel
 
 from utils.license.freesurfer import find_freesurfer_license
 
-from utils.fly.custom_log import custom_log 
-from utils.fly.load_manifest_json import load_manifest_json 
+from utils.fly.custom_log import custom_log
+from utils.fly.load_manifest_json import load_manifest_json
 from utils.fly.make_file_name_safe import make_file_name_safe
 
 from utils.results.set_zip_name import set_zip_head
@@ -65,11 +65,11 @@ def download_files(context):
     Search through all files for all acquisitions for all sessions for this
     subject and download only the T1 nifti files.  If file names are repeated
     a number is prepended. Troublesome characters in the file name are replaced
-    with "_".  The file's original name, full path, and creation date are 
+    with "_".  The file's original name, full path, and creation date are
     logged.
-    
+
     Args:
-        context (dict): the gear context 
+        context (dict): the gear context
         See https://flywheel-io.github.io/core/branches/master/python/sdk_gears.html
 
     Returns:
@@ -113,7 +113,7 @@ def download_files(context):
                     continue
 
                 else:
-                    log.info('Found matching acquisition "' + 
+                    log.info('Found matching acquisition "' +
                               acquisition.label + '" ')
 
             for afile in acquisition.files:
@@ -132,16 +132,19 @@ def download_files(context):
                         safe = make_file_name_safe(afile.name, replace_str='_')
 
                         full_path = input_path + safe
-                        
-                        if acquisition.original_timestamp:
-                            created = acquisition.original_timestamp.isoformat()
+
+                        if acquisition.timestamp:
+                            if acquisition.timezone:
+                                created = acquisition.original_timestamp.isoformat()
+                            else:
+                                created = acquisition.timestamp.isoformat()
                         else:
                             created = 'unknown'
 
                         while full_path in niftis:  # then repeated name
                             full_path = input_path + str(rpt) + '_' + safe
                             rpt += 1
-                            
+
                         if os.path.isfile(full_path):
                             log.info('File exists ' + afile.name + ' -> ' +\
                                  full_path + ' created ' + created)
@@ -234,7 +237,7 @@ def initialize(context):
 
     # Keep a list of errors and warning to print all in one place at end of log
     # Any errors will prevent the command from running and will cause exit(1)
-    context.gear_dict['errors'] = []  
+    context.gear_dict['errors'] = []
     context.gear_dict['warnings'] = []
 
     # Get level of run from destination's parent: subject or session
@@ -289,7 +292,7 @@ def initialize(context):
     #  zipping of final outputs to return.
     context.gear_dict['output_analysisid_dir'] = \
         context.output_dir + '/' + context.destination['id'] + '/' + \
-        context.gear_dict['project_label_safe'] 
+        context.gear_dict['project_label_safe']
 
     # grab environment for gear
     with open('/tmp/gear_environ.json', 'r') as f:
@@ -401,7 +404,7 @@ def execute(context, log):
 
             # Run cross-sectional analysis on each nifti
             # study is freesurfer's SUBJECTS_DIR
-            scrnum = context.gear_dict['subject_code_safe'] 
+            scrnum = context.gear_dict['subject_code_safe']
             num_niftis = str(len(context.gear_dict['niftis']))
 
             for nn, nifti in enumerate(context.gear_dict['niftis']):
@@ -449,7 +452,7 @@ def execute(context, log):
 
                 subject_dir = scrnum + "-" + context.gear_dict['visits'][nn]
 
-                update_gear_status('longitudinal-step', 'longitudinal ' + 
+                update_gear_status('longitudinal-step', 'longitudinal ' +
                     subject_dir + ' (' + str(nn + 1) + ' of ' + num_niftis + \
                     ') "' + context.gear_dict['file_names'][nn] + '" ' + \
                     context.gear_dict['createds'][nn])
@@ -466,7 +469,7 @@ def execute(context, log):
             update_gear_status('longitudinal-step', 'all steps completed')
 
             # run asegstats2table and aparcstats2table to create tables from
-            # aseg.stats and ?h.aparc.stats.  Then modify the results. 
+            # aseg.stats and ?h.aparc.stats.  Then modify the results.
             # freesurfer_tables.pl
             os.chdir(out)
             cmd = '/flywheel/v0/freesurfer_tables.pl .'
@@ -519,7 +522,7 @@ def execute(context, log):
                 shutil.rmtree(path)
 
             else:
-                log.info('NOT zipping output directory "' + 
+                log.info('NOT zipping output directory "' +
                           context.gear_dict['output_analysisid_dir'] + '"')
 
         else:
@@ -550,7 +553,7 @@ def execute(context, log):
 
         log.info('Gear is done.  Returning '+str(return_code))
         os.sys.exit(return_code)
- 
+
 
 if __name__ == '__main__':
 
