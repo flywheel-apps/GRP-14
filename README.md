@@ -112,3 +112,5 @@ for the analysis on the Flywheel platform.
 Example Flywheel SDK python code to list the status is 
 provided in
 [notebooks/Longitudinal_Status.ipynb](https://github.com/flywheel-apps/GRP-14/blob/dev/notebooks/Longitudinal_Status.ipynb).
+
+Outputs from multiple GRP-14 jobs can be consolidated by using gear [GRP-14b](https://github.com/flywheel-apps/grp-14b/tree/master).
