@@ -86,7 +86,6 @@ ProjectName/
 
 Summary outputs are found in $SUBJECTS_DIR/tables/:
 ```
-<<<<<<< HEAD
 ProjectName/
     tables/
         ProjectName_aseg_vol.csv
