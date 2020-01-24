@@ -46,31 +46,24 @@ file, a configuration option, or as project metadata.  See [this description](ht
 ### CONFIG
 `n_cpus`: [_Optional_] Number of of CPUs/cores to use. Default is all available.
 
-`classification_measurement`: [Optional_] By default the pipeline is run on all classified T1 NIfTI files found in all acquisitions for all sessions for the specified subject. However, you can specify a list containing the specific measurements that a given file must have in order to be included.
+`classification_measurement`: [_Optional_] By default the pipeline is run on all classified T1 NIfTI files found in all acquisitions for all sessions for the specified subject. However, you can specify a list containing the specific measurements that a given file must have in order to be included.
 
 `acquisition_regex`: [_Optional_] - By default the gear looks at all acquisitions for candidate input files, however you may specify a regex to only include certain acquisitions across a subject's sessions.
 
 `3T`: [_Optional_] If the T1-weighted scans were acquired on a 3T scanner, set the `3T` 
 configuration option.
 
-`remove_subjects_dir`: [_Default=True_] Remove Freesurfer's SUBJECTS_DIR. Do not save and return all of Freesurfer results.  Default is TRUE: remove, don't save.
+`remove_subjects_dir`: [_Default=True_] Remove Freesurfer's SUBJECTS_DIR. Do not save and return all of Freesurfer results.  Default is TRUE: remove, don't save.  That is, this gear does *not* save the full Freesurfer output by default.  If you *do* want to save all of the Freesurfer output, un-check this option.
 
 ### OUTPUTS
 The results of this gear are .csv files that can be viewed individually on the 
 platform.  They can also be viewed locally by downloading the .zip archive that
 contains all of the .csv files.
 
-These .csv files are named using the name of the project and the measurement.  
-Inside each .csv file, the first three columns are the project name, the subject
+These .csv files are named using the name of the project and the measurement.  Inside each .csv file, the first three columns are the project name, the subject
 name, and the session label.  The subject name and session label here may be
 different from what you see on the Flywheel platform because they are are 
 stripped of any characters that are not numbers, digits, or an underscore.
-
-This gear does *not* save the full Freesurfer output by default.  Note that 
-there is a configuration option called "remove_subjects_dir".  If you *do* want 
-to save all of the Freesurfer output, un-check it.  This will set it to false
-so that all of the Freesurfer subject directories will not be removed.
-Instead, they will end up in the .zip archive along with the .csv files.
 
 If the full Freesurfer output is not removed, the .zip archive will
 contain individual time points in Freesurfer's $SUBJECTS_DIR/, which
@@ -112,9 +105,6 @@ individually.  If you uncheck this option and also uncheck
 "remove_subjects_dir" so that Freesurfer's full output is not removed, 
 there will be *very* many files in the output, which is probably not 
 what you want.
-
-If the T1-weighted scans were acquired on a 3T scanner, set the "3T" 
-configuration option.
 
 ### STATUS
 The status of the gear is saved as it is running in the analysis
