@@ -1,7 +1,7 @@
 # GRP-14
 Freesurfer Longitudinal Analysis Pipeline (6.0.1-5)
 
-This gear implements [Freesurfer's longitudinal analysis](https://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing#WorkflowSummary).
+This gear implements [Freesurfer's longitudinal analysis](https://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing).
 It reconstructs the surface for each subject individually
 and then creates an unbiased template from all time points. Finally, it longitudinally process all timepoints and 
 produces summary statistics. 
@@ -54,8 +54,8 @@ If the full Freesurfer output is not removed, the .zip archive will
 contain individual time points in Freesurfer's $SUBJECTS_DIR/, which
 is set to the Flywheel project name.  There will also be a directory
 called "BASE" and additional directories, one for each time point with
-".long.BASE" appended.  These contain the results from the 3 longitudinal
-pipeline steps, "cross-sectional", "template", and "longitudinal".
+".long.BASE" appended.  These contain the results from the [3 longitudinal
+pipeline steps](https://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing#WorkflowSummary), "cross-sectional", "template", and "longitudinal".
 
 
 ```
