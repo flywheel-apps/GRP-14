@@ -21,7 +21,7 @@ You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
 Above, the subject "126_S_1221" was selected and is highlighted in light blue.
 
-Then click on the "Analyses" tab to find the "Rn Analysis Gear" button that
+Then click on the "Analyses" tab to find the "Run Analysis Gear" button that
 will launch the gear.
 ![Analyses is selected](/images/AnalysesSelected.png)
 Note that the "Subject" tab is still next to the Subjet view button instead of
