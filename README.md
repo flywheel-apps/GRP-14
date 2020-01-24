@@ -85,8 +85,9 @@ The .zip archive is created if the "gear-zip-output" configuration option
 is true (checked).  This is the default.  If you un-check this option, the
 individual files will be available to view/download on the platform
 individually.  If you uncheck this option and also uncheck 
-"remove_subjects_dir", there will be very many files in the output, which
-is probably not what you want.
+"remove_subjects_dir" so that Freesurfer's full output is not removed, 
+there will be *very* many files in the output, which is probably not 
+what you want.
 
 If the T1-weighted scans were acquired on a 3T scanner, set the "3T" 
 configuration option.
