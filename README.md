@@ -31,14 +31,17 @@ will launch the gear.
 Note that the "Subject" tab is still next to the Subject view button instead of
 the "Acquisitions" tab, which is now missing.
 
-The longitudinal pipeline is run on all T1 NIfTI files found in all 
-acquisitions for all sessions for the specified subject.
+### INPUTS
+No scan inputs are required for this gear.  The longitudinal pipeline
+will be run on all T1 NIfTI files found in all acquisitions for all
+sessions for the specified subject. That is, the Gear will use a
+read-only API key at the time of execution to iterate through a
+given subject's sessions and acquisitions to find all appropriate
+scans.
 
 IMPORTANT NOTE: A Freesurfer license file must be supplied. This can be done as an input
 file, a configuration option, or as project metadata.  See [this description](https://docs.flywheel.io/hc/en-us/articles/360013235453-How-to-include-a-Freesurfer-license-file-in-order-to-run-the-fMRIPrep-gear-) for more information.
 
-### INPUTS
-No gear inputs need are required (see note above regarding FreeSurfer license). The Gear will use a read-only API key at the time of execution to iterate through a given subject's sessions and acquisitions to find all appropriate scans.
 
 ### CONFIG
 `n_cpus`: [_Optional_] Number of of CPUs/cores to use. Default is all available.
