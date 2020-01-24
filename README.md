@@ -38,8 +38,9 @@ platform.  They can also be viewed locally by downloading the .zip archive that
 contains all of the .csv files.
 
 These .csv files are named using the name of the project and the measurement.  
-Inside the .csv file, the first three columns are the project name, the subject
-name, and the session label.  The subject name and session label are first
+Inside each .csv file, the first three columns are the project name, the subject
+name, and the session label.  The subject name and session label here may be
+different from what you see on the Flywheel platform because they are are 
 stripped of any characters that are not numbers, digits, or an underscore.
 
 This gear does *not* save the full Freesurfer output by default.  Note that 
@@ -50,7 +51,7 @@ Instead, they will end up in the .zip archive along with the .csv files.
 
 If the full Freesurfer output is not removed, the .zip archive will
 contain individual time points in Freesurfer's $SUBJECTS_DIR/, which
-is the Flywheel project name.  There will also be a directory
+is set to the Flywheel project name.  There will also be a directory
 called "BASE" and additional directories, one for each time point with
 ".long.BASE" appended.  These contain the results from the 3 longitudinal
 pipeline steps.
@@ -58,13 +59,13 @@ pipeline steps.
 
 ```
 ProjectName/
-    SubjectCode-SessionLabel
-    SubjectCode-SessionLabel
-    SubjectCode-SessionLabel
-    BASE
-    SubjectCode-SessionLabel.long.BASE
-    SubjectCode-SessionLabel.long.BASE
-    SubjectCode-SessionLabel.long.BASE
+    SubjectCode-SessionLabel/
+    SubjectCode-SessionLabel/
+    SubjectCode-SessionLabel/
+    BASE/
+    SubjectCode-SessionLabel.long.BASE/
+    SubjectCode-SessionLabel.long.BASE/
+    SubjectCode-SessionLabel.long.BASE/
 ```
 
 Summary outputs are found in $SUBJECTS_DIR/tables/:
