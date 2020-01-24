@@ -16,7 +16,7 @@ those instructions, the *most important step* is to select (click on) a
 particular subject after pressing the Subject view button.  Then that subject 
 will be highlighted and next to the Subject view button, instead of the
 "Acquisitions" tab as shown here in the red oval:
-![Acquisitiions is selected](/images/AcquisitionsSelected.png)
+![Acquisitions is selected](/images/AcquisitionsSelected.png)
 
 You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
@@ -25,14 +25,14 @@ Above, the subject "126_S_1221" was selected and is highlighted in light blue.
 Then click on the "Analyses" tab to find the "Run Analysis Gear" button that
 will launch the gear.
 ![Analyses is selected](/images/AnalysesSelected.png)
-Note that the "Subject" tab is still next to the Subjet view button instead of
-the "Acqusitions" tab, which is now missing.
+Note that the "Subject" tab is still next to the Subject view button instead of
+the "Acquisitions" tab, which is now missing.
 
-The longituninal pipeline is run on all T1 NIfTI files found in all 
+The longitudinal pipeline is run on all T1 NIfTI files found in all 
 acquisitions for all sessions for the specified subject.
 
 A Freesurfer license file must be supplied. This can be done as an input
-file, a configuration option, or as project metadata.  See [this descripiton](https://docs.flywheel.io/hc/en-us/articles/360013235453-How-to-include-a-Freesurfer-license-file-in-order-to-run-the-fMRIPrep-gear-) for more information.
+file, a configuration option, or as project metadata.  See [this description](https://docs.flywheel.io/hc/en-us/articles/360013235453-How-to-include-a-Freesurfer-license-file-in-order-to-run-the-fMRIPrep-gear-) for more information.
 
 The results of this gear are .csv files that can be viewed individually on the 
 platform.  They can also be viewed locally by downloading the .zip archive that
@@ -55,7 +55,7 @@ contain individual time points in Freesurfer's $SUBJECTS_DIR/, which
 is set to the Flywheel project name.  There will also be a directory
 called "BASE" and additional directories, one for each time point with
 ".long.BASE" appended.  These contain the results from the 3 longitudinal
-pipeline steps.
+pipeline steps, "cross-sectional", "template", and "longitudinal".
 
 
 ```
