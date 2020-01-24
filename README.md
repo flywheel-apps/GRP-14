@@ -8,7 +8,11 @@ produces summary statistics.
 The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.
 
 This gear needs to be run at the [subject level](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject).
-No gear inputs need are required.
+To be certain that you are running at the subject level, *be sure* to select (click on) a particular subjecgt afger pressing the Subjecgt view button.  Then
+you will see the "Subject" tab next to the Subject view button instead of the
+Acquisitions tab as shown here.
+![Subject is selected](/images/SubjectSelected.png)
+No gear inputs are required.
 The longituninal pipeline is run on all T1 NIfTI files found in all 
 acquisitions for all sessions for the specified subject.
 
