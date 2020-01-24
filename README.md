@@ -10,10 +10,11 @@ The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stab
 This gear needs to be run at the subject level.  See [Run an analysis gear on a subject](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject) for how to do that.  
 To be certain that you are running at the subject level when following
 those instructions, *be sure* to select (click on) a particular
-subject afger pressing the Subject view button.  Then that subject will
-be highlighted and instead of the
-"Acquisitions" tab next to the Subject view button, you will see the 
-"Subject" tab as shown here in the red oval:
+subject after pressing the Subject view button.  Then that subject will
+be highlighted and next to the Subject view button, instead of the
+"Acquisitions" tab as shown here in the red oval:
+![Acquisitiions is selected](/images/AcquisitionsSelected.png)
+You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
 No gear inputs are required.
 The longituninal pipeline is run on all T1 NIfTI files found in all 
