@@ -33,27 +33,59 @@ acquisitions for all sessions for the specified subject.
 A Freesurfer license file must be supplied. This can be done as an input
 file, a configuration option, or as project metadata.  See [this descripiton](https://docs.flywheel.io/hc/en-us/articles/360013235453-How-to-include-a-Freesurfer-license-file-in-order-to-run-the-fMRIPrep-gear-) for more information.
 
-Output is found in Freesurfer's $SUBJECTS_DIR/:
+The results of this gear are .csv files that can be viewed individually on the 
+platform.  They can also be viewed locally by downloading the .zip archive that
+contains all of the .csv files.
+
+These .csv files are named using the name of the project and the measurement.  
+Inside the .csv file, the first three columns are the project name, the subject
+name, and the session label.  The subject name and session label are first
+stripped of any characters that are not numbers, digits, or an underscore.
+
+This gear does *not* save the full Freesurfer output by default.  Note that 
+there is a configuration option called "remove_subjects_dir".  If you *do* want 
+to save all of the Freesurfer output, un-check it.  This will set it to false
+so that all of the Freesurfer subject directories will not be removed.
+Instead, they will end up in the .zip archive along with the .csv files.
+
+If the full Freesurfer output is not removed, the .zip archive will
+contain individual time points in Freesurfer's $SUBJECTS_DIR/, which
+is the Flywheel project name.  There will also be a directory
+called "BASE" and additional directories, one for each time point with
+".long.BASE" appended.  These contain the results from the 3 longitudinal
+pipeline steps.
+
+
 ```
-scrnum_visit_1
-scrnum_visit_2
-scrnum_visit_j
-BASE
-scrnum_visit_1.long.BASE
-scrnum_visit_2.long.BASE
-scrnum_visit_j.long.BASE
+ProjectName/
+    SubjectCode-SessionLabel
+    SubjectCode-SessionLabel
+    SubjectCode-SessionLabel
+    BASE
+    SubjectCode-SessionLabel.long.BASE
+    SubjectCode-SessionLabel.long.BASE
+    SubjectCode-SessionLabel.long.BASE
 ```
 
 Summary outputs are found in $SUBJECTS_DIR/tables/:
 ```
-ABE4869g_aseg_vol.csv
-ABE4869g_aparc_vol_right.csv
-ABE4869g_aparc_vol_left.csv
-ABE4869g_aparc_thick_right.csv
-ABE4869g_aparc_thick_left.csv
-ABE4869g_aparc_area_right.csv
-ABE4869g_aparc_area_left.csv
+ProjectName/
+    tables/
+        ProjectName_aseg_vol.csv
+        ProjectName_aparc_vol_right.csv
+        ProjectName_aparc_vol_left.csv
+        ProjectName_aparc_thick_right.csv
+        ProjectName_aparc_thick_left.csv
+        ProjectName_aparc_area_right.csv
+        ProjectName_aparc_area_left.csv
 ```
+
+The .zip archive is created if the "gear-zip-output" configuration option
+is true (checked).  This is the default.  If you un-check this option, the
+individual files will be available to view/download on the platform
+individually.  If you uncheck this option and also uncheck 
+"remove_subjects_dir", there will be very many files in the output, which
+is probably not what you want.
 
 If the T1-weighted scans were acquired on a 3T scanner, set the "3T" 
 configuration option.
