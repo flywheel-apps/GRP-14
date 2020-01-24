@@ -1,13 +1,12 @@
 {
   "name": "grp-14",
-  "label": "GRP-14: Freesurfer Longitudinal Analysis Pipeline",
-  "description": "Freesurfer (6.0.1-5) This app implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. The Freesurfer longitudinal pipeline is used to created subject specific templates.  The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.  This must be run at the subject level.",
-  "version": "0.0.15_6.0.1-5",
+  "label": "GRP-14: Freesurfer (6.0.1-5) Longitudinal Analysis Pipeline",
+  "description": "This Gear implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. NOTE: This Gear must be run at the subject level. By default this Gear will only save the table outputs for each longitudinal run. If you wish to preserve an archive of the FreeSurfer data within $SUBJECTS_DIR you must modify the 'remove_subjects_dir' configuration parameter. Analysis results can be aggregated across a given project with GRP-14b.",
+  "version": "0.1.2_6.0.1-5",
   "custom": {
-    "docker-image": "flywheel/grp-14:0.0.15_6.0.1-5",
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/grp-14:0.0.15_6.0.1-5"
+      "image": "flywheel/grp-14:0.1.2_6.0.1-5"
     },
     "flywheel": {
       "suite": "FreeSurfer"
@@ -61,12 +60,12 @@
       "default": "INFO",
       "description": "Gear Log verbosity level (ERROR|WARNING|INFO|DEBUG)",
       "type": "string",
-                        "enum": [
-                                "ERROR",
-                                "WARNING",
-                                "INFO",
-                                "DEBUG"
-                        ]
+      "enum": [
+        "ERROR",
+        "WARNING",
+        "INFO",
+        "DEBUG"
+      ]
     },
     "gear-dry-run": {
       "default": false,
@@ -82,7 +81,7 @@
       "description": "Text from license file generated during FreeSurfer registration. *Entries should be space separated*",
       "type": "string",
       "optional": true
-    }   
+    }
   },
   "environment": {
     "PYTHONUNBUFFERED": "1",
