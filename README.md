@@ -16,6 +16,7 @@ particular subject after pressing the Subject view button.  Then that subject
 will be highlighted and next to the Subject view button, instead of the
 "Acquisitions" tab as shown here in the red oval:
 ![Acquisitiions is selected](/images/AcquisitionsSelected.png)
+
 You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
 Above, the subject "126_S_1221" was selected and is highlighted in light blue.
