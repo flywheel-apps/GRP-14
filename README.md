@@ -1,7 +1,8 @@
 # GRP-14
 Freesurfer Longitudinal Analysis Pipeline (6.0.1-5)
 
-This gear implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually
+This gear implements [Freesurfer's longitudinal analysis](https://surfer.nmr.mgh.harvard.edu/fswiki/LongitudinalProcessing#WorkflowSummary).
+It reconstructs the surface for each subject individually
 and then creates an unbiased template from all time points. Finally, it longitudinally process all timepoints and 
 produces summary statistics. 
 
