@@ -7,6 +7,7 @@ produces summary statistics.
 
 The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.
 
+No gear inputs are required.
 This gear needs to be run at the subject level.  See [Run an analysis gear on a subject](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject) for how to do that.  
 To be certain that you are running at the subject level when following
 those instructions, the *most important step* is to select (click on) a 
@@ -16,7 +17,10 @@ will be highlighted and next to the Subject view button, instead of the
 ![Acquisitiions is selected](/images/AcquisitionsSelected.png)
 You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
-No gear inputs are required.
+Then click on the "Analyses" tab to find the "Rn Analysis Gear" button that
+will launch the gear.
+![Analyses is selected](/images/AnalysesSelected.png)
+
 The longituninal pipeline is run on all T1 NIfTI files found in all 
 acquisitions for all sessions for the specified subject.
 
