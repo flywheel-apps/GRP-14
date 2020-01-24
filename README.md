@@ -18,7 +18,7 @@ will be highlighted and next to the Subject view button, instead of the
 ![Acquisitiions is selected](/images/AcquisitionsSelected.png)
 You will see the "Subject" tab next to the Subject view button like this:
 ![Subject is selected](/images/SubjectSelected.png)
-Above, the subject "126_S_1221" was selected.
+Above, the subject "126_S_1221" was selected and is highlighted in light blue.
 
 Then click on the "Analyses" tab to find the "Rn Analysis Gear" button that
 will launch the gear.
