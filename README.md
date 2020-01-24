@@ -9,10 +9,9 @@ produces summary statistics.
 
 The current Freesurfer version is based on: freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.1.tar.gz.
 
-IMPORTANT NOTE: By default this Gear DOES NOT save all FreeSurfer outputs, it only retains the summary tables. If you wish to preserve the FreeSurfer outputs you MUST modify the `remove_subjects_dir` configuration option from `True` to `False`. 
+IMPORTANT NOTE: By default this Gear DOES NOT save all FreeSurfer outputs, it only retains the summary tables. If you wish to preserve the FreeSurfer outputs you MUST modify the `remove_subjects_dir` configuration option from `True` (checked) to `False` (un-checked).
 
 ## Gear Execution
-No gear inputs are required.
 This gear needs to be run at the subject level.  See [Run an analysis gear on a subject](https://docs.flywheel.io/hc/en-us/articles/360038261213-Run-an-analysis-gear-on-a-subject) for how to do that.  
 
 To be certain that you are running at the subject level when following
