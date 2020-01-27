@@ -16,8 +16,7 @@ This gear needs to be run at the subject level.  See [Run an analysis gear on a 
 
 To be certain that you are running at the subject level when following
 those instructions, the *most important step* is to select (click on) a 
-particular subject after pressing the Subject view button.  Then that subject 
-will be highlighted.  If you have not yet selected a subject, the
+particular subject after pressing the Subject view button.  If you have not yet selected a subject, the
 "Acquisitions" tab will be next to the Subject view button:
 ![Acquisitions is selected](/images/AcquisitionsSelected.png)
 
