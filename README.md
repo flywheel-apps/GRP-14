@@ -17,13 +17,12 @@ This gear needs to be run at the subject level.  See [Run an analysis gear on a 
 To be certain that you are running at the subject level when following
 those instructions, the *most important step* is to select (click on) a 
 particular subject after pressing the Subject view button.  Then that subject 
-will be highlighted.  Before you select a subject, the
-"Acquisitions" tab as shown here in the red oval will be next to the Subject view button:
+will be highlighted.  If you have not yet selected a subject, the
+"Acquisitions" tab will be next to the Subject view button:
 ![Acquisitions is selected](/images/AcquisitionsSelected.png)
 
-You will know you are running at the subject level when you see the "Subject" tab next to the Subject view button like this:
+You will know you are running at the subject level when you see the "Subject" tab next to the Subject view button.  Here, the subject "126_S_1221" was selected and is highlighted in light blue.:
 ![Subject is selected](/images/SubjectSelected.png)
-Above, the subject "126_S_1221" was selected and is highlighted in light blue.
 
 Then click on the "Analyses" tab to find the "Run Analysis Gear" button that
 will launch the gear.
