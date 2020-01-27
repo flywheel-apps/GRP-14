@@ -20,11 +20,11 @@ particular subject after pressing the Subject view button.  If you have not yet 
 "Acquisitions" tab will be next to the Subject view button:
 ![Acquisitions is selected](/images/AcquisitionsSelected.png)
 
-You will know you are running at the subject level when you see the "Subject" tab next to the Subject view button.  Here, the subject "126_S_1221" was selected and is highlighted in light blue.:
+You will know you are running at the subject level when you see the "Subject" tab next to the Subject view button.  Here, the subject "126_S_1221" was selected and is highlighted in light blue:
 ![Subject is selected](/images/SubjectSelected.png)
 
 Once a subject has been selected, click on the "Analyses" tab to find the "Run Analysis Gear" button that
-will launch the gear.
+will launch the gear:
 ![Analyses is selected](/images/AnalysesSelected.png)
 Note that the "Subject" tab is still next to the Subject view button instead of
 the "Acquisitions" tab, which is now missing.
@@ -46,12 +46,12 @@ file, a configuration option, or as project metadata.  See [this description](ht
 
 `classification_measurement`: [_Optional_] By default the pipeline is run on all classified T1 NIfTI files found in all acquisitions for all sessions for the specified subject. However, you can specify a list containing the specific measurements that a given file must have in order to be included.
 
-`acquisition_regex`: [_Optional_] - By default the gear looks at all acquisitions for candidate input files, however you may specify a regex to only include certain acquisitions across a subject's sessions.
+`acquisition_regex`: [_Optional_] By default the gear looks at all acquisitions for candidate input files, however you may specify a regex to only include certain acquisitions across a subject's sessions.
 
 `3T`: [_Optional_] If the T1-weighted scans were acquired on a 3T scanner, set the `3T` 
 configuration option.
 
-`remove_subjects_dir`: [_Default=True_] Remove Freesurfer's SUBJECTS_DIR. Do not save and return all of Freesurfer results.  Default is TRUE: remove, don't save.  That is, this gear does *not* save the full Freesurfer output by default.  If you *do* want to save all of the Freesurfer output, un-check this option.
+`remove_subjects_dir`: [_Default=True_] Remove Freesurfer's SUBJECTS_DIR. Do not save and return all of Freesurfer results.  Default is TRUE: remove, don't save.  That is, this gear does *not* save the full Freesurfer output by default.  If you *do* want to save all of the Freesurfer output, un-check this option.   Summary tables are always saved.
 
 ### OUTPUTS
 The results of this gear are .csv files that can be viewed individually on the 
