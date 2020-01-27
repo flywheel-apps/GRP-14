@@ -23,7 +23,7 @@ particular subject after pressing the Subject view button.  If you have not yet 
 You will know you are running at the subject level when you see the "Subject" tab next to the Subject view button.  Here, the subject "126_S_1221" was selected and is highlighted in light blue.:
 ![Subject is selected](/images/SubjectSelected.png)
 
-Then click on the "Analyses" tab to find the "Run Analysis Gear" button that
+Once a subject has been selected, click on the "Analyses" tab to find the "Run Analysis Gear" button that
 will launch the gear.
 ![Analyses is selected](/images/AnalysesSelected.png)
 Note that the "Subject" tab is still next to the Subject view button instead of
