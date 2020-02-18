@@ -11,7 +11,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* 
 # The last line above is to help keep the docker image smaller
 
-RUN pip3 install flywheel-sdk==10.4.1 && \
+RUN pip3 install flywheel-sdk==10.7.4 && \
     rm -rf /root/.cache/pip
 
 # Make directory for flywheel spec (v0)
