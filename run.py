@@ -123,9 +123,10 @@ def download_files(context):
 
                     found_one = False
                     for cm in class_meas:
-                        if cm in afile.classification['Measurement']:
-                            found_one = True
-                            log.info('Found ' + cm + ' file')
+                        if 'Measurement' in afile.classification:
+                            if cm in afile.classification['Measurement']:
+                                found_one = True
+                                log.info('Found ' + cm + ' file')
 
                     if found_one:
 
