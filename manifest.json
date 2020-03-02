@@ -2,11 +2,11 @@
   "name": "grp-14",
   "label": "GRP-14: Freesurfer (6.0.1-5) Longitudinal Analysis Pipeline",
   "description": "This Gear implements Freesurfer's longitudinal analysis. It reconstructs the surface for each subject individually and then creates a study specific template. NOTE: This Gear must be run at the subject level. By default this Gear will only save the table outputs for each longitudinal run. If you wish to preserve an archive of the FreeSurfer data within $SUBJECTS_DIR you must modify the 'remove_subjects_dir' configuration parameter. Analysis results can be aggregated across a given project with GRP-14b.",
-  "version": "0.1.4_6.0.1-5",
+  "version": "0.1.5_6.0.1-5",
   "custom": {
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/grp-14:0.1.4_6.0.1-5"
+      "image": "flywheel/grp-14:0.1.5_6.0.1-5"
     },
     "flywheel": {
       "suite": "FreeSurfer"
