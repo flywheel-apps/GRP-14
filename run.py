@@ -531,8 +531,6 @@ def execute(context, log):
             context.gear_dict['warnings'].append(e)
             utils.dry_run.pretend_it_ran(context)
 
-        ret = 1 # assume the worst
-
         if ok_to_run:
 
             # Create output directory
@@ -633,10 +631,6 @@ def execute(context, log):
                 else:
                     log.info('Running: ' + cmd)
                     ret.append(utils.system.run(context, cmd))
-
-                set_recon_all_status(subject_dir + '.long.BASE')
-
-            update_gear_status('longitudinal-step', 'all steps completed')
 
                 set_recon_all_status(subject_dir + '.long.BASE')
 
