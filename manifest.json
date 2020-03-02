@@ -41,10 +41,30 @@
       "optional": true,
       "type": "string"
     },
-    "acquisition_regex": {
-      "description": "A regular expression to find acquisitions to run on.  Default is all acquisitions for the subject.",
+    "acquisition_excludelist": {
+      "description": "A space separated list of regular expressions to exclude acqusitions to run on.  Default is all acqusitions. Add ^ to the beginning and $ to the end to exactly match a string.",
       "optional": true,
       "type": "string"
+    },
+    "acquisition_includelist": {
+      "description": "A space separated list of regular expressions to include acquisitions to run on.  Default is all acquisitions. Add ^ to the beginning and $ to the end to exactly match a string.",
+      "optional": true,
+      "type": "string"
+    },
+    "session_excludelist": {
+      "description": "A space separated list of regular expressions to exclude sessions to run on.  Default is all sessions. Add ^ to the beginning and $ to the end to exactly match a string.",
+      "optional": true,
+      "type": "string"
+    },
+    "session_includelist": {
+      "description": "A space separated list of regular expressions to include sessions to run on.  Default is all sessions. Add ^ to the beginning and $ to the end to exactly match a string.",
+      "optional": true,
+      "type": "string"
+    },
+    "3T": {
+      "description": "Enables the two 3T specific options that recon-all supports: nu intensity correction params, and the special schwartz atlas",
+      "optional": true,
+      "type": "boolean"
     },
     "3T": {
       "description": "Enables the two 3T specific options that recon-all supports: nu intensity correction params, and the special schwartz atlas",
