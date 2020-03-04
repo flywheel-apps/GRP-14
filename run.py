@@ -486,7 +486,7 @@ def set_up_data(context, log):
 
 
 def field_strength_close_enough(field_strength, desired_value):
-    """Check if the ginve value is "close enough" to the desired value
+    """Check if the given value is "close enough" to the desired value
     
     Because sometimes MagneticFieldStrength can be provide in mT (3000, 1500) 
     or something like 2.9721T
