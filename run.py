@@ -59,8 +59,50 @@ import utils.dry_run
 import utils.system
 
 
-def download_files(context):
-    """Download apropriate files for the subject
+def download_it(fw, acquisition, file_name, input_path):
+    """Once proper file has been found, get it.
+
+    Args:
+        acquisition
+        file_name
+        input_path
+    """
+
+    safe = make_file_name_safe(file_name, replace_str='_')
+
+    full_path = input_path + safe
+
+    if acquisition.timestamp:
+        if acquisition.timezone:
+            created = acquisition.original_timestamp.isoformat()
+        else:
+            created = acquisition.timestamp.isoformat()
+    else:
+        created = 'unknown'
+
+    rpt = 1
+    while full_path in context.gear_dict['niftis']:  # then repeated name
+        full_path = input_path + str(rpt) + '_' + safe
+        rpt += 1
+
+    if os.path.isfile(full_path):
+        log.info('File exists ' + file_name + ' -> ' +\
+             full_path + ' created ' + created)
+    else:
+        log.info('Downloading ' + file_name + ' -> ' +\
+             full_path + ' created ' + created)
+        acquisition.download_file(file_name, full_path)
+
+    full_file = fw.get_acquisition_file_info(acquisition.id, file_name)
+    field_strength = full_file.info.get('MagneticFieldStrength')
+
+    context.gear_dict['niftis'].append(full_path)
+    context.gear_dict['file_names'].append(file_name)
+    context.gear_dict['createds'].append(created)
+    context.gear_dict['field_strength'].append(field_strength)
+
+def find_and_download_files(context):
+    """Find apropriate files for the subject and download them
 
     Search through all files for all acquisitions for all sessions for this
     subject and download only the T1 nifti files.  If file names are repeated
@@ -85,13 +127,6 @@ def download_files(context):
         log.debug('Creating: ' + input_path)
         os.mkdir(input_path)
 
-    # These three lists will have the same number of elements so the ith elements
-    # in each refer to the same file/acquisition.
-    niftis = []
-    file_names = []
-    createds = []
-    visits = []
-    rpt = 1
     fw = context.client
 
     if 'classification_measurement' in context.config:
@@ -99,22 +134,122 @@ def download_files(context):
     else:
         class_meas = ['T1']
 
+    # session and acquisition include/exclude lists can come from:
+    #   project info metadata,
+    #   subject info metadata, and
+    #   config options
+    # The last one wins (how about getting it from an input file also, eh?)
+    ses_exclude_list = None
+    ses_include_list = None
+    acq_exclude_list = None
+    acq_include_list = None
+
+    fs = 'freesurfer_longitudinal_'
+    where = 'Found in project info'
+    # check for exclude/include lists of regexs for sessions in project info
+    sel = context.gear_dict['project'].info.get(fs + 'session_excludelist')
+    if sel:
+        ses_exclude_list = sel.split()
+        log.info(where+' '+fs+'session_excludelist: "'+sel+'"')
+    sil = context.gear_dict['project'].info.get(fs + 'session_includelist')
+    if sil:
+        ses_include_list = sil.split()
+        log.info(where+' '+fs+'session_includelist: "'+sil+'"')
+    # check for exclude/include lists of regexs for acquisitions in project info
+    ael = context.gear_dict['project'].info.get(fs + 'acquisition_excludelist')
+    if ael:
+        acq_exclude_list = ael.split()
+        log.info(where+' '+fs+'acquisition_excludelist: "'+ael+'"')
+    ail = context.gear_dict['project'].info.get(fs + 'acquisition_includelist')
+    if ail:
+        acq_include_list = ail.split()
+        log.info(where+' '+fs+'acquisition_includelist: "'+ail+'"')
+
+    where = 'Found in subject info'
+    # check for exclude/include lists of regexs for sessions in subject info
+    sel = context.gear_dict['subject'].info.get(fs + 'session_excludelist')
+    if sel:
+        ses_exclude_list = sel.split()
+        log.info(where+' '+fs+'session_excludelist: "'+sel+'"')
+    sil = context.gear_dict['subject'].info.get(fs + 'session_includelist')
+    if sil:
+        ses_include_list = sil.split()
+        log.info(where+' '+fs+'session_includelist: "'+sil+'"')
+    # check for exclude/include lists of regexs for acquisitions in subject info
+    ael = context.gear_dict['subject'].info.get(fs + 'acquisition_excludelist')
+    if ael:
+        acq_exclude_list = ael.split()
+        log.info(where+' '+fs+'acquisition_excludelist: "'+ael+'"')
+    ail = context.gear_dict['subject'].info.get(fs + 'acquisition_includelist')
+    if ail:
+        acq_include_list = ail.split()
+        log.info(where+' '+fs+'acquisition_includelist: "'+ail+'"')
+
+    where = 'Found in config'
+    # set up exclude/include lists of reegexs for sessions in config
+    if 'session_excludelist' in context.config:
+        ses_exclude_list = context.config['session_excludelist'].split()
+        log.info(where+' session_excludelist: "'+str(ses_exclude_list)+'"')
+    if 'session_includelist' in context.config:
+        ses_include_list = context.config['session_includelist'].split()
+        log.info(where+' session_includelist: "'+str(ses_include_list)+'"')
+
+    # set up exclude/include lists of reegexs for acquisitions in config
+    if 'acquisition_excludelist' in context.config:
+        acq_exclude_list = context.config['acquisition_excludelist'].split()
+        log.info(where+' acquisition_excludelist: "'+str(acq_exclude_list)+'"')
+    if 'acquisition_includelist' in context.config:
+        acq_include_list = context.config['acquisition_includelist'].split()
+        log.info(where+' acquisition_includelist: "'+str(acq_include_list)+'"')
+
     # go through all sessions, acquisitions to find files
     for session in context.gear_dict['subject'].sessions():
 
+        lemme_out = False
+        if ses_exclude_list:
+            for regex in ses_exclude_list:
+                if re.search(regex, session.label):  # if excluded, skip
+                    log.info('Session "' + session.label + '" matches ' + \
+                             'exclusion regex, skipping it')
+                    lemme_out = True
+                    continue
+        if lemme_out:
+            continue
+
+        if ses_include_list:
+            match = False
+            for regex in ses_include_list:
+                if not re.search(regex, session.label):
+                    match = True
+            if match:
+                continue  # if  not included (matches any regex), skip
+            else:
+                log.info('Session "' + session.label + '" matches ' \
+                         'an inclusion regex, keeping it')
+
         for acquisition in fw.get_session_acquisitions(session.id):
 
-            if 'acquisition_regex' in context.config:
-                # Skip this acquisition if the regex doesn't match
-                if not re.search(context.config['acquisition_regex'],
-                                 acquisition.label):
-                    log.info('Acquisition "' + acquisition.label + '" ' +
-                             'does not match the given regex.')
-                    continue
+            lemme_out = False
+            if acq_exclude_list:
+                for regex in acq_exclude_list:
+                    if re.search(regex, acquisition.label):  # if excluded, skip
+                        log.info('Acquisition "' + acquisition.label + \
+                                 '" matches exclusion regex, skipping it')
+                        lemme_out = True
+                        continue
+            if lemme_out:
+                continue
 
+            if acq_include_list:
+                match = False
+                for regex in acq_include_list:
+                    if not re.search(regex, acquisition.label):
+                        match = True
+                if match:
+                    continue  # if  not included (matches any regex), skip
                 else:
-                    log.info('Found matching acquisition "' +
-                              acquisition.label + '" ')
+                    log.info('Acquisition "' + acquisition.label + '" ' + \
+                             'matches an inclusion regex, keeping it')
 
             for afile in acquisition.files:
 
@@ -129,44 +264,36 @@ def download_files(context):
                                 log.info('Found ' + cm + ' file')
 
                     if found_one:
-
-                        safe = make_file_name_safe(afile.name, replace_str='_')
-
-                        full_path = input_path + safe
-
-                        if acquisition.timestamp:
-                            if acquisition.timezone:
-                                created = acquisition.original_timestamp.isoformat()
-                            else:
-                                created = acquisition.timestamp.isoformat()
-                        else:
-                            created = 'unknown'
-
-                        while full_path in niftis:  # then repeated name
-                            full_path = input_path + str(rpt) + '_' + safe
-                            rpt += 1
-
-                        if os.path.isfile(full_path):
-                            log.info('File exists ' + afile.name + ' -> ' +\
-                                 full_path + ' created ' + created)
-                        else:
-                            log.info('Downloading ' + afile.name + ' -> ' +\
-                                 full_path + ' created ' + created)
-                            acquisition.download_file(afile.name, full_path)
-
-                        niftis.append(full_path)
-                        file_names.append(afile.name)
-                        createds.append(created)
-                        visits.append(make_file_name_safe(session.label, '_'))
-
+                        download_it(fw, acquisition, afile.name, input_path)
+                        context.gear_dict['visits'].append(
+                            make_file_name_safe(session.label, '_'))
                     else:
                         log.info('Ignoring ' + afile.name)
 
-    context.gear_dict['niftis'] = niftis
-    context.gear_dict['file_names'] = file_names
-    context.gear_dict['createds'] = createds
-    context.gear_dict['visits'] = visits
 
+def update_gear_status(key, value):
+    """Set destination's 'info' to indicate what's happening"""
+
+    fw = context.client
+    dest_container = fw.get(context.destination['id'])
+    kwargs = {key: value}
+    dest_container.update_info(kwargs)
+    log.info(repr(kwargs))
+
+
+def set_recon_all_status(subject_dir):
+    """Set final status to last line of recon-all-status.log."""
+
+    path = context.gear_dict['output_analysisid_dir'] + '/' + \
+           subject_dir + '/scripts/recon-all-status.log'
+    if os.path.exists(path):
+        with open(path, 'r') as fh:
+            for line in fh:
+                pass
+            last_line = line
+    else:
+        last_line = 'recon-all-status.log is missing'
+    update_gear_status(subject_dir, last_line)
 
 def update_gear_status(key, value):
     """Set destination's 'info' to indicate what's happening"""
@@ -215,6 +342,14 @@ def initialize(context):
     # Instantiate custom gear dictionary to hold "gear global" info
     context.gear_dict = {}
 
+    # These lists will have the same number of elements so the ith 
+    # elements in each refer to the same file/acquisition.
+    context.gear_dict['niftis'] = []
+    context.gear_dict['file_names'] = []
+    context.gear_dict['createds'] = []
+    context.gear_dict['visits'] = []
+    context.gear_dict['field_strength'] = []
+
     # get # cpu's to set -openmp
     cpu_count = os.cpu_count()
     str_cpu_count = str(cpu_count)
@@ -250,6 +385,7 @@ def initialize(context):
     context.gear_dict['project_id'] = project_id
     if project_id:
         project = fw.get(project_id)
+        context.gear_dict['project'] = project
         context.gear_dict['project_label'] = project.label
         context.gear_dict['project_label_safe'] = \
             make_file_name_safe(project.label, '_')
@@ -329,7 +465,7 @@ def set_up_data(context, log):
             log.info('Downloading scans for subject "' + subject_code + '"')
 
             # Grab all T1 nifti files for this subject
-            download_files(context)
+            find_and_download_files(context)
 
         elif context.gear_dict['run_level'] == 'session':
 
@@ -349,8 +485,32 @@ def set_up_data(context, log):
         log.exception('Error in input download and validation.')
 
 
+def field_strength_close_enough(field_strength, desired_value):
+    """Check if the given value is "close enough" to the desired value
+    
+    Because sometimes MagneticFieldStrength can be provide in mT (3000, 1500) 
+    or something like 2.9721T
+    
+    Args:
+        field_strength (float): DICOM MagneticFieldStrength value
+        desired_value (float): value in Teslas to compare with, e.g. 3
+            as opposed to 1.5.
+    """
+
+    if field_strength > 100:  # assume it is in mT instead of Teslas
+        field_strength /= 1000  # and turn it into Teslas
+
+    diff = abs(field_strength - desired_value)
+
+    if diff < 0.2:
+        return True
+    else:
+        return False
+
+
 def execute(context, log):
     """Run the Freesurfer Longitudinal Pipeline"""
+
     try:
 
         # Don't run if there were errors or if this is a dry run
@@ -410,6 +570,11 @@ def execute(context, log):
 
             for nn, nifti in enumerate(context.gear_dict['niftis']):
 
+                if field_strength_close_enough(
+                    context.gear_dict['field_strength'][nn], 3):
+                        if ' -3T' not in options:
+                            options += ' -3T'
+
                 subject_dir = scrnum + "-" + context.gear_dict['visits'][nn]
 
                 update_gear_status('longitudinal-step', 'cross-sectional ' + \
@@ -424,6 +589,8 @@ def execute(context, log):
                 else:
                     log.info('Running: ' + cmd)
                     ret.append(utils.system.run(context, cmd))
+
+                set_recon_all_status(subject_dir)
 
                 set_recon_all_status(subject_dir)
 
@@ -566,6 +733,3 @@ if __name__ == '__main__':
         set_up_data(context, log)
 
     execute(context, log)
-
-
-# vi:set autoindent ts=4 sw=4 expandtab : See Vim, :help 'modeline'

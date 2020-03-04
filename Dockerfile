@@ -3,15 +3,13 @@ FROM bids/freesurfer:v6.0.1-5
 
 MAINTAINER Flywheel <support@flywheel.io>
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-
 RUN apt-get update && \
     apt-get install -y \
     zip && \
     rm -rf /var/lib/apt/lists/* 
 # The last line above is to help keep the docker image smaller
 
-RUN pip3 install flywheel-sdk==10.7.4 && \
+RUN pip3 install flywheel-sdk==11.1.0 && \
     rm -rf /root/.cache/pip
 
 # Make directory for flywheel spec (v0)

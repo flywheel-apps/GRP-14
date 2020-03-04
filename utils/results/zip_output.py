@@ -45,8 +45,6 @@ def zip_output(context):
         log.info(
             'Zipping ' + actual_dir + ' directory to ' + dest_zip + '.'
         )
-        #command = ['zip', '-q', '-r', dest_zip, actual_dir]
-        #result = sp.run(command, check=True)
 
         outzip = ZipFile(dest_zip, 'w', ZIP_DEFLATED)
         for root, _, files in os.walk(actual_dir):
@@ -58,5 +56,3 @@ def zip_output(context):
     else:
 
         log.error('Output directory does not exist: ' + full_path)
-
-# vi:set autoindent ts=4 sw=4 expandtab : See Vim, :help 'modeline'
